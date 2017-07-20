@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+{% extends 'base2.html' %}
+
+{% block contenido %}
+<html>
+<head>
+    <title>Registrar Grupo Etareo</title>
+</head>
+
+
+<script type="text/javascript">
+    var editor;
+    
+$(document).ready(function(){
+	{% load templatag_grupos %}
+		{% ifusergroup Web %}
+			
+		{% else %}
+			$("#id_tipo_en").select2();
+		{% endifusergroup %}
+    
+    var TPre = $('#tab_preguntas').dataTable({
+        "iDisplayLength": 25,
+        "iDisplayStart": 0,
+        "sPaginationType": "full_numbers",
+        "aLengthMenu": [25, 50, 75, 100],
+        "oLanguage": {"sUrl": "/static/js/es.txt"},
+        "aoColumns": [
+            {"sClass": "registro center", "sWidth": "3%"},
+			{"sClass": "registro center", "sWidth": "50%"},
+			{"sClass": "registro center", "sWidth": "10%"},
+			{"sWidth": "3%", "bSortable": false, "sClass": "center sorting_false", "bSearchable": false},
+			{"sWidth": "3%", "bSortable": false, "sClass": "center sorting_false", "bSearchable": false},
+        ],
+	order: [ 0, 'asc' ],
+    });
+	//Boton +Agregar Preguntas Limpia los campos de la ventana modal captura el id de la encuesta y valida el cod de la pregunta
+    $('#addpreguntas').click(function(e){
+		$('#id_pregunta').val('').prop('disabled',false);
+		$('#id_tipo_p').val(0).prop('disabled',false);
+		$("#registrar_pre").prop('disabled',false)
+        $('#content_masiva').modal('show');
+		var cod = $('#id_cod_encuesta').val();
+		var bandera = 'encuesta';
+		$.post('/preguntas/registrarpreguntas/',{'csrfmiddlewaretoken': "{{ csrf_token }}",'cod': cod, 'bandera':bandera} , function(data){
+			$('#cod_pregunta').text(data.cod_pregunta);
+		});
+    })
+	
+	//Valdación de radio Sexo labels
+	$('#div_genero').on('click','div > label',function(){
+		var este = $(this).attr('id');
+		//alert(este)
+
+		if (este == 'continua') {
+				$('#continua').prop('checked',true);
+		} else if (este == 'no_continua') {
+				$('#nocontinua').prop('checked',true);
+		}
+	});
+	//Mensaje de ayuda encuesta Continua
+	$('#help_continua').click(function(e){
+		bootbox.alert({
+			title: 'Tipo de aplicación Continua',
+			message: 'Las encuestas de aplicación CONTINUA, son aquellas que podrán aplicarse varias veces sin importar que los encuestados se encuentre en la misma red de computadoras.',
+		})
+    });
+	//Mensaje de ayuda encuesta No Continua
+	$('#help_nocontinua').click(function(e){
+		bootbox.alert({
+			title: 'Tipo de aplicación No Continua',
+			message: 'Las encuestas de aplicación NO CONTINUA, son aquellas que podrán aplicarse una (1) sola vez por encuestado, sin importar que se encuentre en la misma  red ya sea de trabajo o domestica. ',
+		})
+    });
+	
+	
+	
+    
+    $('#id_pregunta').alphanumeric({allow:" -*/=.,¡!'¿?()%:;_"}); //Valida solo valores tipo texto en descripción
+	
+	$('#id_tipo_en').change(function() {
+		var tipo = $(this).val();
+		
+		if (tipo == 2) { //TODO
+			$('#continua').prop('checked',true).prop('disabled',false)
+			$('#nocontinua,#continua,#no_continua,#continua').prop('disabled',true)
+		}else{ //Por Municipio
+			$('#nocontinua,#continua,#no_continua,#continua').prop('disabled',false).prop('checked',false)
+		}
+	});
+	
+    $('#registrar_pre').click(function(e){ //Valida al guardar que el rago no sea menor 3 caracteres
+        e.preventDefault();
+		var accion = $(this).attr('id');
+		$('input').on({
+			keypress: function() {
+			$(this).parent('div').removeClass('has-error');
+			}
+		});
+		$('select').on({
+			change: function() {
+				$(this).parent('div').removeClass('has-error');
+			}
+		});
+		//Valida que el usuario no deje el campo pregunta en blanco
+		if (($('#id_pregunta').val().trim() == '')) {
+			bootbox.alert("Disculpe, Debe colocar la pregunta", function() {
+				$('#id_pregunta').parent('div').addClass('has-error'); // colocar class has-error de boostrap
+				$('#id_pregunta').focus()
+			});
+		}
+		//Valida que el usuario seleccione el tipo de Pregunta
+		else if (($('#id_tipo_p').val() == 0)) {
+			bootbox.alert("Disculpe, Debe seleccionar el tipo de pregunta", function() {
+				$('#id_tipo_p').parent('div').addClass('has-error'); // colocar class has-error de boostrap
+			});  
+		}
+		else{
+			var cod_pregunta = $('#cod_pregunta').text();
+			$.post('/preguntas/registrarpreguntas/',$('#frmpreguntas').serialize()+'&cod_pregunta='+cod_pregunta, function(data){
+				var save = (data.status);
+				if (save == 'Guardado') {
+					$('#cod_pregunta_add').val(data.id);
+					bootbox.confirm({
+						title: 'Generar Respuestas',
+						message: '¿Disculpe, Desea generar las respuesta para la pregunta?',
+						buttons: {
+							'cancel': {
+								label: 'NO',
+								className: 'btn-danger'
+							},
+							'confirm': {
+								label: 'SI',
+								className: 'btn-info'
+							}
+						},
+						callback: function(result) {
+							if (result) {
+								var cod = $('#cod_pregunta_add').val();
+								var bandera = 'pregunta';
+								console.log(cod)
+								$.post('/respuestas/registrarrespuestas/',{'csrfmiddlewaretoken': "{{ csrf_token }}",'cod': cod, 'bandera':bandera} , function(data){
+								$('#cod_respuesta').text(data.cod_respuesta);
+								console.log(data.cod_respuesta)
+								});
+								$('#id_respuesta').val('').prop('disabled',false);
+								$('#id_tipo').val(0).prop('disabled',false);
+								$('#frmrespuestas').slideDown('fast');
+							}else{
+								var cod_pregunta =  parseInt($('#cod_pregunta').text());
+								cod_pregunta = cod_pregunta + 1;
+								$('#cod_pregunta').text(cod_pregunta)
+								
+								$('#id_pregunta').val('').prop('disabled',false);
+								$('#id_tipo_p').val(0).prop('disabled',false);
+								$("#registrar_pre").prop('disabled',false)
+							}
+						}
+					});
+					$("#id_tipo_p").prop('disabled',true)
+					$("#id_pregunta").prop('disabled',true)
+					$("#registrar_pre").prop('disabled',true)
+					$("#agregar").prop('disabled',false)
+					//$("#refrescar").html('<META HTTP-EQUIV="Refresh" CONTENT="0">')
+				}
+			});
+	    
+		}
+    });
+    
+    $('#Registrar').click(function(e){ 
+        e.preventDefault();
+		var id = $(this).attr('id');
+		var tipo = $('#id_tipo_en').find('option').filter(':selected').val()
+		
+		$('input').on({
+			keypress: function() {
+			$(this).parent('div').removeClass('has-error');
+			}
+		});
+		$('select').on({
+			change: function() {
+				$(this).parent('div').removeClass('has-error');
+			}
+		});
+		
+		if (($('#id_tipo_en').val() == 0)) {
+			bootbox.alert("Disculpe, Debe seleccionar el tipo de Encuesta", function() {
+				$('#id_tipo').parent('div').addClass('has-error'); // colocar class has-error de boostrap
+				$('#id_tipo').select2('open') 
+			});
+		}else if ((tipo != 2) && (!$('input[name="tipo_aplicacion"]').is(':checked'))) {
+			bootbox.alert('Disculpe, seleccionar el tipo de aplicación', function() {	    
+			});
+		}else if (($('#id_nombre').val().trim() == '')) {
+			bootbox.alert("Disculpe, Debe colocar el nombre de su encuesta", function() {
+				$('#id_nombre').parent('div').addClass('has-error'); // colocar class has-error de boostrap
+				$('#id_nombre').focus()
+			});
+		}else{
+			$('#id_estatus,#nocontinua,#continua,#no_continua,#continua').prop('disabled',false);
+			$('#form_encuesta').submit();
+			$('#id_estatus,#nocontinua,#continua,#no_continua,#continua').prop('disabled',true);
+		}
+    });
+
+    $('#id_respuesta').alphanumeric({allow:" -*/=.,¡!'¿?()%:;_"}); //Valida solo valores del campo respuesta
+    //$("#id_tipo_p").select2();
+    $('#registrar_resp').click(function(e){ //Valida al guardar que el rago no sea menor 3 caracteres
+        e.preventDefault();
+		var accion = $(this).attr('id');
+		$('input').on({
+			keypress: function() {
+			$(this).parent('div').removeClass('has-error');
+			}
+		});
+		$('select').on({
+			change: function() {
+				$(this).parent('div').removeClass('has-error');
+			}
+		});
+		if (($('#id_respuesta').val().trim() == '')) {//valida que no tenga espacios en blancos .trim y este vacio
+			bootbox.alert("Disculpe, Debe colocar la Respuesta", function() {
+				$('#id_respuesta').parent('div').addClass('has-error'); // colocar class has-error de boostrap
+				$('#id_respuesta').focus()
+			});
+		   
+		}else if (($('#id_tipo').val() == 0)) {
+			bootbox.alert("Disculpe, Debe seleccionar el tipo de Respuesta", function() {
+				$('#id_tipo').parent('div').addClass('has-error'); // colocar class has-error de boostrap
+			});  
+		}
+		else{
+			var cod_respuesta = $('#cod_respuesta').text();
+			var cod_pregunta = $('#cod_pregunta_add').val()
+			var respuesta = $("#id_respuesta").val();
+			var tipo = $("#id_tipo").val();
+			$.post('/respuestas/registrarrespuestas/',$('#frmrespuestas').serialize()+'&cod_pregunta='+cod_pregunta+'&cod_respuesta='+cod_respuesta+'&accion=pregunta', function(data){
+				
+				var save = (data.status);
+				if (save == 'Guardado') {
+					bootbox.confirm({
+							title: 'Generar Respuestas',
+							message: '¿Disculpe, Desea generar más respuestas a la pregunta?',
+							buttons: {
+								'cancel': {
+									label: 'NO',
+									className: 'btn-danger'
+								},
+								'confirm': {
+									label: 'SI',
+									className: 'btn-info'
+								}
+							},
+						callback: function(result) {
+							if (result) {
+								var cod_respuesta =  parseInt($('#cod_respuesta').text());
+								cod_respuesta = cod_respuesta + 1;
+								$('#cod_respuesta').text(cod_respuesta)
+								$('#id_respuesta').val('').prop('disabled',false);
+								$('#id_tipo').val(0).prop('disabled',false);
+								$("#registrar_resp").prop('disabled',false)
+							}
+							else{
+								$('#frmrespuestas').slideUp('fast');
+								bootbox.confirm({
+									title: 'Generar Preguntas',
+									message: '¿Disculpe, Desea generar más preguntas a la Encuesta?',
+									buttons: {
+										'cancel': {
+											label: 'NO',
+											className: 'btn-danger'
+										},
+										'confirm': {
+											label: 'SI',
+											className: 'btn-info'
+										}
+									},
+									callback: function(result) {
+										if (result) {
+											var cod_pregunta =  parseInt($('#cod_pregunta').text());
+											cod_pregunta = cod_pregunta + 1;
+											$('#cod_pregunta').text(cod_pregunta)
+											$('#id_pregunta').val('').prop('disabled',false);
+											$('#id_tipo_p').val(0).prop('disabled',false);
+											$("#registrar_pre").prop('disabled',false)
+											$('#frmrespuestas').slideUp('fast');
+										}else{
+											$('#close_preguntas').trigger('click');
+										}
+									}
+								});
+							}
+						}
+					});
+				}
+			});
+	    
+		}
+    });
+
+    $('#volver').click(function(){
+        url = '/encuestas/'
+        window.location = url
+    });
+	
+    //cierra la modal y actualiza 
+    $('#close_preguntas').click(function(){
+		location.reload();
+    })
+    
+    $('.borrarpreguntas').click(function(e){
+		var id = $(this).attr('id')
+		var padre      = $(this).closest('tr');
+		var nRow       = padre[0];
+		e.preventDefault()
+		bootbox.confirm({
+			title: 'Elminar Pregunta',
+			message: '¿Disculpe, Desea eliminar esta Pregunta?',
+			buttons: {
+				'cancel': {
+					label: 'NO',
+					className: 'btn-danger'
+				},
+				'confirm': {
+					label: 'SI',
+					className: 'btn-info'
+				}
+			},
+			callback: function(result) {
+				if (result == false) {
+				
+				}else{
+					$.post('/preguntas/borrarpreguntas/',{'csrfmiddlewaretoken': "{{ csrf_token }}",'id': id},function(response){
+						if (response['delete'] == 'ok') {
+							TPre.fnDeleteRow(nRow);
+							bootbox.alert("Eliminacion Exitosa", function() {
+							});
+						}
+					},'json')
+				}
+			}
+		}); 
+	
+    });
+});
+</script>
+
+
+<style type="text/css">
+    
+.fila-base{ display: none; } /* fila base oculta */
+.eliminar{ cursor: pointer; color: #000; }
+input[type="text"]{ width: 400px; } /* ancho a los elementos input="text" */
+ 
+</style>
+<body>
+    {% load templatag_grupos %}
+    {% ifusergroup Registro %}
+    <br/>
+    <br/>
+    <div id="refrescar"></div>
+    <form id="form_encuesta" method="post" >
+	{% csrf_token %}
+	<div style="width: 80%;" class="panel panel-primary">
+	    <div class="panel-heading">
+			<label class="panel-title">Editar Encuesta</label>
+	    </div>
+	    <br/>
+	    <fieldset>
+			<legend style="padding-bottom: 2%" class="titulo">Datos del la encuesta</legend>
+	    <br/>
+	    <div class="form-inline">		
+		<div class="form-group col-xs-1"></div>
+		<div class="form-group col-xs-1">
+		    <label>Encuesta:</label>
+		</div>
+		<div class="form-group col-xs-1">
+		    <span style="color: red">{{obj_reg_enc.cod_encuesta}} </span>
+		</div>
+		<div class="form-group col-xs-2">
+		    <input id="id_cod_encuesta" name="cod_encuesta" type="hidden"  value="{{obj_reg_enc.pk}}"  />
+			<input id="id_estatus" name="estatus" type="hidden"  value="1" />
+		</div>
+		
+		<div class="form-group col-xs-4">
+		</div>
+		<div class="form-group col-xs-1">
+		    <label>Status:</label>
+		</div>
+		<div class="form-group col-xs-2">
+		    <span id="id_estatus" name="estatus" value='1' disabled="disabled" style="color: red">Borrador</span>
+		</div>
+		<div class="form-group col-xs-1"></div>
+		<br/>
+		<br/>
+		<br/>
+		
+		<div class="form-group col-md-1">
+		</div>
+		<div class="form-group col-md-1">
+		    <label>Tipo:</label>
+		</div>
+		{% ifusergroup Web %}
+		<div class="form-group col-md-2">
+		    <span name="tipo" style="color: #017F09">Web</span>
+			<input id="id_tipo_en" name="tipo" type="hidden"  value="1" />
+		</div>
+		{% else %}
+		<div class="form-group col-md-2">
+			<select style="width: 100%" id="id_tipo_en" name="tipo">
+				{% if obj_reg_enc.tipo == 0 %}
+					<option value=0 selected='selected'>Seleccione</option>
+				{% endif %}
+				{% if not obj_reg_enc.tipo == 0 %}
+					<option value=0>Seleccione</option>
+				{% endif %}
+				{% if obj_reg_enc.tipo == '1' %}
+					<option value='1' selected='selected'>Web</option>
+				{% endif %}
+				{% if not obj_reg_enc.tipo == '1' %}
+					<option value='1'>Web</option>
+				{% endif %}
+				{% if obj_reg_enc.tipo == '2' %}
+					<option value='2' selected='selected'>Móvil</option>
+				{% endif %}
+				{% if not obj_reg_enc.tipo == '2' %}
+					<option value='2'>Móvil</option>
+				{% endif %}
+				{% if obj_reg_enc.tipo == '3' %}
+					<option value='3' selected='selected'>Web y Móvil</option>
+				{% endif %}
+				{% if not obj_reg_enc.tipo == '3' %}
+					<option value='3'>Web y Móvil</option>
+				{% endif %}
+			</select>
+		</div>
+		{% endifusergroup %}
+		
+		<div id="div_genero" class="form-group col-md-8 text-center">
+			<div class="form-group col-md-2"></div>
+			<div class="form-group col-md-3">Tipo de Aplicación:</div>
+			<div class="form-group col-md-3 " >
+				{% if obj_reg_enc.tipo_aplicacion == 1 %}
+				<input type="radio" id="continua" name="tipo_aplicacion" checked="checked" value="1" />
+				{% endif %}
+				{% if not obj_reg_enc.tipo_aplicacion == 1 %}
+				<input type="radio" id="continua" name="tipo_aplicacion" value="1" />
+				{% endif %}
+				<label id="continua">Continua
+				</label>
+				<img id="help_continua" style="width: 18px; height: 18px;cursor: pointer" src="{{ STATIC_URL }}img/help_verde.jpg"/>
+			</div>
+			<div class="form-group col-md-3" >
+				{% if obj_reg_enc.tipo_aplicacion == 2 %}
+				<input type="radio" id="nocontinua" name="tipo_aplicacion"  checked="checked"value="2" />
+				{% endif %}
+				{% if not obj_reg_enc.tipo_aplicacion == 2 %}
+				<input type="radio" id="nocontinua" name="tipo_aplicacion" value="2" />
+				{% endif %}
+				<label id="no_continua">No Continua 
+				</label>
+				<img id="help_nocontinua" style="width: 18px; height: 18px;cursor: pointer" src="{{ STATIC_URL }}img/help_azul.jpg"/>
+			</div>
+		</div>
+		<br/>
+		<br/>
+		<br/>
+		
+		
+		
+		
+		<div class="form-group col-xs-1"></div>
+		<div class="form-group col-xs-1">
+		    <label>Nombre:</label>
+		</div>
+		<div class="form-group col-xs-9">
+		    <input id="id_nombre" maxlength="150" value='{{obj_reg_enc.nombre}}' placeholder="Nombre de la Encuesta" style="width: 100%;font-size: 13px" name="nombre" type="text" />
+		</div>
+		<div class="form-group col-xs-1">
+		</div>
+		<br/>
+		<br/>
+		<br/>
+		<div class="form-group col-xs-4">
+			<input id='user_update' type="hidden" name='user_update' value='{{ user.id }}'>
+			<input id='user_create' type="hidden" name='user_create' value='{{obj_reg_enc.user_create.id}}'>
+		</div>
+		<div class="form-group col-xs-6" >
+			<button type="button" id="volver" style="font-weight: bold;font-size: 13px" class="btn btn-warning " >
+		    &nbsp;<span class="glyphicon glyphicon-chevron-left"></span>&nbsp;Volver
+			</button>
+		    <button type="submit" id="Registrar" style="font-weight: bold;font-size: 13px" class="btn btn-info">
+		    &nbsp;<span class="glyphicon glyphicon-floppy-disk"></span>&nbsp; Guardar Cambios
+		    </button>
+			<button id="addpreguntas" type="button" class="btn btn-success" style="font-weight: bold;font-size: 13px" data-toggle="modal" >
+		    &nbsp;<span class="glyphicon glyphicon-plus-sign"></span>&nbsp; Agregar Preguntas
+		    </button>
+		</div>
+	    </div>
+	    <br/>				
+	    <br/>
+	    <div style="width:80%">
+			<table style="width:100%;" border="0" align="center" cellspacing="1" id="tab_preguntas" align="center"
+				class="table table-bordered table-striped table-hover table-condensed dt-responsive table-responsive display">
+				<thead style="font-size: 13px">
+					<tr class="info">
+						<th style='text-align: center' colspan="6">Preguntas Registradas</th>
+					</tr>
+					<tr class="info">
+						<th style='text-align: center'>#</th>
+						<th style='text-align: center'>Pregunta</th>
+						<th style='text-align: center'>Tipo</th>
+						<th style='text-align: center'>Editar</th>
+						<th style='text-align: center'>Borrar</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for m in obj_pre %}
+					<tr style="font-size: 13px;text-align: center" class="{% cycle 'impar' 'par' %}">
+					<td>
+						{{ forloop.counter }}
+					</td>
+					<td>
+						{{ m.pregunta }}
+					</td>
+					<td>
+					   {% if m.tipo == '1' %}
+						   Selección Simple
+					   {% else %}
+						   Selección Múltimple
+					   {% endif %}
+					</td>
+					<td>
+					   <a href="{% url "editar_pregunta" m.id %}"><img style="width:25px;height: 25px" src="{{ STATIC_URL }}img/edit.png"/></a>
+					</td>
+					<td>
+					   <a  href="" >
+						<img class="borrarpreguntas" id="{{m.id}}" style="width:25px;height: 25px" src="{{ STATIC_URL }}img/borrar.png"/>
+						</a>
+					</td>
+					</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+	    </div>
+	</fieldset>
+	</div>
+    </form>
+    
+    <!-- VENTANA MODAL PARA REGISTRO DE PREGUNTAS	-->
+    <form id="frmpreguntas">
+	{% csrf_token %}
+	<div class="modal fade" id="content_masiva" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style='margin-top: 4%;'>
+	<div class="modal-dialog" style=';width: 75%'>
+	<div class="modal-content">
+	<div class="modal-header">
+	    <button type="button" style="color: red; font-size: 30px" id="close_preguntas" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+	    <h4 class="modal-title" id="myModalLabel">Crear Preguntas</h4>
+	</div>
+	<div class="modal-body" style='background-color: #EEEEEE;'>
+	<div class="form-inline">
+	    <div class="form-group col-xs-1"> </div>
+	    <div class="form-group col-xs-2">
+		Número: <span id="cod_pregunta" style="color: red">  </span>
+	    </div>
+	    <div class="form-group col-xs-5">
+		
+		<input id="id_cod_encuesta" name="cod_encuesta" type="hidden"  value="{{obj_reg_enc.pk}}"  />
+	    </div>
+	    <div class="form-group col-xs-1">
+		<label>Tipo:</label>
+	    </div>
+	    <div class="form-group col-xs-2">
+		<select style="width: 100%;font-size: 13px"  id="id_tipo_p" name="tipo">
+		    <option value='0'>Seleccione</option>
+		    <option value='1'>Selec. Simple</option>
+		    <option value='2'>Selec. Múltiple</option>
+		</select>
+	    </div>
+	    <br/>
+	    <br/>
+	    <br/>
+	    <div class="form-group col-xs-1"> </div>
+	    <div class="form-group col-xs-10">
+		<input type='text' maxlength="300" placeholder="Escriba aqui la pregunta" style="width: 100%;font-size: 13px" id="id_pregunta" name="pregunta"/>
+	    </div>
+	</div>
+	    <div class="form-group col-xs-2"> </div>
+	    <br/>
+	    <br/>
+	    <div class="form-group col-xs-1"></div>
+	    <div class="form-group col-xs-1">
+		<button  type="button" class="btn btn-info" id="registrar_pre" data-toggle="modal" style="font-weight: bold;font-size: 13px" >
+		    &nbsp;<span class="glyphicon glyphicon-plus-sign"></span>&nbsp; Registrar Pregunta
+		</button>
+	    </div>
+	    <input id='user_create' type="hidden" name='user_create' value='{{ user.id }}'>
+	    <br/>
+	    <br/>
+	</div>
+	<br/>
+	<br/>
+    </form>
+	
+<!-- VENTANA MODAL PARA REGISTRO DE RESPUESTAS	-->
+    <form id="frmrespuestas" method="post" style="display: none">
+		     {% csrf_token %}
+			<h4 class="modal-title" id="myModalLabel">Crear Respuestas</h4>
+			<div class="modal-body" style='background-color: #EEEEEE;'>
+			<div class="form-inline">
+			    <div class="form-group col-xs-1"> </div>
+			    <div class="form-group col-xs-2">
+				Número: <span id="cod_respuesta" style="color: red">  </span>
+			    </div>
+			    <div class="form-group col-xs-5">
+				<input type='hidden' id='cod_pregunta_add'/>
+			    </div>
+			    <div class="form-group col-xs-1">
+				<label>Tipo:</label>
+			    </div>
+			    <div class="form-group col-xs-2">
+				<select style="width: 100%;font-size: 13px"  id="id_tipo" name="tipo">
+				    <option value='0'>Seleccione</option>
+				    <option value='1'>Cerrada</option>
+				    <option value='2'>Abierta</option>
+				</select>
+			    </div>
+			    <br/>
+			    <br/>
+			    <br/>
+			    <div class="form-group col-xs-1"> </div>
+			    <div class="form-group col-xs-10">
+				<input type='text' maxlength="200" placeholder="Escriba aqui la Respuesta" style="width: 100%;font-size: 13px" id="id_respuesta" name="respuesta"/>
+			    </div>
+			</div>
+			    <div class="form-group col-xs-2"> </div>
+			    <br/>
+			    <br/>
+			    <div class="form-group col-xs-1"></div>
+			    <div class="form-group col-xs-1">
+				<button  type="button" class="btn btn-info" id="registrar_resp" data-toggle="modal" style="font-weight: bold;font-size: 13px" >
+				    &nbsp;<span class="glyphicon glyphicon-plus-sign"></span>&nbsp; Registrar Respuesta
+				</button>
+			    </div>
+			    <input id='user_create' type="hidden" name='user_create' value='{{ user.id }}'>
+			    <br/>
+			    <br/>
+			</div>
+			<br/>
+			<br/>
+    </form>
+		
+    {% else %}
+    <p style="color: #FF0000; font-size: 18px">Disculpe No esta autorizado para esa área.</p>
+    {% endifusergroup %}
+</body>
+</html>
+{% endblock %}

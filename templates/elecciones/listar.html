@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+{% block contenido %}
+{% load templatag_grupos %}
+{% ifusergroup Registro %}
+<script>
+$(document).ready(function(){
+    var TUbch = $('#tab_elecciones').dataTable({
+        "iDisplayLength": 25,
+        "iDisplayStart": 0,
+        "sPaginationType": "full_numbers",
+        "aLengthMenu": [25, 50, 75, 100],
+        "oLanguage": {"sUrl": "/static/js/es.txt"},
+        "aoColumns": [
+            {"sClass": "registro center", "sWidth": "3%"},
+            {"sClass": "registro center", "sWidth": "5%"},
+            {"sClass": "registro center", "sWidth": "20%"},
+            {"sClass": "registro center", "sWidth": "15%"},
+            {"sClass": "registro center", "sWidth": "10%"},
+            {"sWidth": "3%", "bSortable": false, "sClass": "center sorting_false", "bSearchable": false},
+            {"sWidth": "3%", "bSortable": false, "sClass": "center sorting_false", "bSearchable": false},
+        ]
+    });
+    
+
+    
+    
+    $('#enviar').click(function(){
+        url = '/elecciones/registrareleccion/'
+        window.location = url
+    })   
+
+});
+    function cambiar_status(pk_id,status) {
+        id_data= String(pk_id)
+        bootbox.confirm("¿Realmente desea cambiar el status?", function(result) {
+            if (result === true) {
+              
+                $.post('', {'pk': id_data, 'status': status, 'csrfmiddlewaretoken': "{{ csrf_token }}"}, function (response) {
+                    if (response == 'exito') {
+                        bootbox.alert("El estatus ha sido actualizado", function () {
+                          
+                        });
+                    }
+                });
+              
+            }else{
+              url = '/elecciones/'
+              window.location = url
+            }
+            
+        });
+    };
+</script>
+
+
+<div style="width:70%">
+    <button role="button" class="btn btn-primary" style="font-weight: bold;font-size: 13px" id="enviar" >
+        &nbsp;<span class="glyphicon glyphicon-plus"></span>&nbsp;Agregar Elección
+    </button>
+    <br/>
+    <br/>
+
+    <div style="font-size: 13px;text-align: left;width: 100%">
+        <img style="width:12px;height: 12px" src="{{ STATIC_URL }}img/yes.png"/> Activa
+        <br/>
+        <img style="width:12px;height: 12px" src="{{ STATIC_URL }}img/no.png"/> Inactiva
+    </div>
+    <table style="width:100%;" border="0" align="center" cellspacing="1" id="tab_elecciones" align="center"
+           class="table table-bordered table-striped table-hover table-condensed dt-responsive table-responsive" style="width:30%">
+        <thead style="font-size: 13px">
+            <tr class="info">
+                <th style='text-align: center' colspan="7"> Listado de Elecciones</th>
+            </tr>
+            <tr class="info">
+                <th style='text-align: center'>Ítem</th>
+                <th style='text-align: center'>Activa</th>
+                <th style='text-align: center'>Elección</th>
+                <th style='text-align: center'>Categoría</th>
+                <th style='text-align: center'>Tipo</th>
+                <th style='text-align: center'>Editar</th>
+                <th style='text-align: center'>Borrar</th>
+            </tr>
+        </thead>
+        <tbody>    
+            {% for m in listar_eleccion %}
+            <tr style="font-size: 13px" class="{% cycle 'impar' 'par' %}">
+                <td>
+                    {{ forloop.counter }}
+                </td>
+                <td style='text-align: center'>
+                    {%if m.ele_activa == True %}
+                    <input type="checkbox" name="check" class="btn_check" onclick="cambiar_status('{{m.id}}',$(this).prop('checked'))" checked="checked"/>
+					{% else %}
+					<input type="checkbox" name="check" class="btn_check" onclick="cambiar_status('{{m.id}}',$(this).prop('checked'))"/>
+					{% endif %}
+                </td>
+                <td>
+                    {{m.nombre}}
+                </td>
+                <td>
+                    {{m.categoria_eleccion}}
+                </td>
+                <td>
+                    {% for c in list_t %}
+                        {% if c.id == m.tipo_eleccion %}
+                            {{c.tipo}}
+                        {% endif %}
+                    {% endfor %}
+                </td>
+                <td style='text-align: center'>
+                    <a href="{% url "editar_eleccion" m.id %}"><img style="width:25px;height: 25px" src="{{ STATIC_URL }}img/edit.png"/></a>
+                </td>
+                <td style='text-align: center'>
+                    <a href="{% url "borrar_eleccion" m.id %}"><img style="width:25px;height: 25px" src="{{ STATIC_URL }}img/borrar.png"/></a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% else %}
+<p style="color: #FF0000; font-size: 18px">Disculpe No esta autorizado para esa área.</p>
+{% endifusergroup %}
+{% endblock %}

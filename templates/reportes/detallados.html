@@ -1,0 +1,271 @@
+{% extends 'base.html' %}
+{% block contenido %}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <title>Total de Votos</title>
+</head>
+
+
+<script type="text/javascript">
+    var chart;
+    $(document).ready(function(){
+	var startDate = new Date('01/01/2015');
+	var FromEndDate = new Date();
+	var ToEndDate = new Date();
+	
+	ToEndDate.setDate(ToEndDate.getDate()+365);
+	
+	$('#from_date').datepicker({
+	    format: "dd-mm-yyyy",
+	    endDate: FromEndDate,
+	    language: "es",
+	    //startView: 1,
+	    autoclose: true,
+	    startDate: "-1y"
+	})
+	    .on('changeDate', function(selected){
+		startDate = new Date(selected.date.valueOf());
+		startDate.setDate(startDate.getDate(new Date(selected.date.valueOf())));
+		$('#to_date').datepicker('setStartDate', startDate);
+	    }); 
+	$('#to_date')
+	    .datepicker({
+		format: "dd-mm-yyyy",
+		startDate: startDate,
+		endDate: ToEndDate,
+		autoclose: true,
+		language: "es"
+	    })
+	    .on('changeDate', function(selected){
+		FromEndDate = new Date(selected.date.valueOf());
+		FromEndDate.setDate(FromEndDate.getDate(new Date(selected.date.valueOf())));
+		$('#from_date').datepicker('setEndDate', FromEndDate);
+	    });
+	    
+	    
+	$('select').on({
+	    change: function() {
+		$(this).parent('div').removeClass('has-error');
+	    }
+	});
+	$('input').on({
+	    keypress: function() {
+		$(this).parent('div').removeClass('has-error');
+	    }
+	});
+    
+	$("#id_candidatos").select2();
+        $('#det_exit_cand').click(function(){
+	    var todo = 'todo'
+	    var from_date = $('#from_date').val()
+	    var to_date = $('#to_date').val()
+	    
+	    // REINICIAR LOS COLORES
+	    $('#id_nombre').css('border','');
+	    $('#id_apellido').css('border','');
+	    
+	    if (($('#from_date').val() == '')) {
+		bootbox.alert('Debe indicar Desde que Fecha quiere el Reporte', function() {	    
+		$('#from_date').css('border','1px solid #66AFE9');
+		$('#from_date').focus();
+	    });
+	    }
+	    else if (($('#to_date').val() == '')) {
+		bootbox.alert('Debe indicar Hasta que Fecha quiere el Reporte', function() {	    
+		$('#to_date').css('border','1px solid #66AFE9');
+		$('#to_date').focus();
+	    });
+	    }
+	    else {
+		URL = 'exit_candidatos/'+from_date+'/'+to_date
+		window.open(URL); 
+	    }
+	    
+
+        });
+	$('#rep_exit_detallado').click(function(){
+	    var todo = 'todo'
+	    var from_date = $('#from_date').val()
+	    var to_date = $('#to_date').val()
+	    
+	    // REINICIAR LOS COLORES
+	    $('#id_nombre').css('border','');
+	    $('#id_apellido').css('border','');
+	    
+	    if (($('#from_date').val() == '')) {
+		bootbox.alert('Debe indicar Desde que Fecha quiere el Reporte', function() {	    
+		$('#from_date').css('border','1px solid #66AFE9');
+		$('#from_date').focus();
+	    });
+	    }
+	    else if (($('#to_date').val() == '')) {
+		bootbox.alert('Debe indicar Hasta que Fecha quiere el Reporte', function() {	    
+		$('#to_date').css('border','1px solid #66AFE9');
+		$('#to_date').focus();
+	    });
+	    }
+	    else {
+		URL = 'detallado/'+from_date+'/'+to_date	
+		window.open(URL); 
+	    }
+        });
+	$('#det_candidato').click(function(){
+            var candidato = $('#id_candidatos').find('option').filter(':selected').val()
+	    if (candidato == 0) {
+		bootbox.alert('Debe Seleccionar el Candidato para poder exportar el PDF', function() {	    
+		$('#id_candidatos').select2('open');
+	    });
+            }else{
+		$('#alert_1').hide()
+                URL = 'candidato/'+candidato
+                window.open(URL); 
+            }
+        });
+	$('#det_candidato_total').click(function(){
+            var candidato = $('#id_candidatos').find('option').filter(':selected').val()
+	    
+            if (candidato == 0) { 
+		bootbox.alert('Debe Seleccionar el Candidato para poder exportar el PDF', function() {	    
+		$('#id_candidatos').select2('open');
+	    });
+            }else{
+		$('#alert_1').hide()
+                URL = 'candidato_detallado/'+candidato
+                window.open(URL); 
+            }
+        });
+     })
+</script>
+
+<body>
+    <center><h3>Generación de Reportes Detallados</h3></center>
+
+    <div style="width: 80%;" style="text-align: center" class="panel panel-primary">
+        <div class="panel-heading">
+            Listado detallado de todos los Exit Polls en Base a un Rango de Fechas 
+        </div>
+	<br/>
+	<div class="form-inline" style="text-align: left;font-weight: bold">
+	    <div class="form-group col-xs-2">
+	    </div>
+	    <div class="form-group col-xs-5">
+		<label for="desde">Seleccione un Rango de Fecha:</label>
+	    </div>
+	    <div class="form-group col-xs-5">
+	    </div>
+	</div>
+        <br/>
+	
+	
+	<div class="form-inline" style="text-align: left;font-weight: bold">
+            <div class="form-group col-xs-2">
+            </div>
+            <div class="form-group col-xs-1">
+                <label>Desde:
+            </div>
+            <div class="form-group col-xs-2">
+		<input id="from_date" placeholder="Seleccione Fecha Inicial" contenteditable="false" type="text">
+            </div>
+	    <div class="form-group col-xs-1">
+		
+            </div>
+	    <div class="form-group col-xs-1">
+		Hasta:
+            </div>
+            <div class="form-group col-xs-2">
+		<input id="to_date" placeholder="Seleccione Fecha Final" contenteditable="false" type="text">
+            </div>
+	    <div class="form-group col-xs-3">
+            </div>
+        </div>
+	<br/>
+        <br/>
+	<div class="form-inline" style="text-align: center;font-weight: bold">
+	    <div class="form-group col-xs-2">
+	    </div>
+	    <div class="form-group col-xs-3">
+		<button role="button" id="det_exit_cand" style="font-weight: bold;width: 100%"  class="btn btn-primary">
+		    <span class="glyphicon glyphicon-file"></span>&nbsp;Reporte solo Candidatos PDF</button>
+	    </div>
+	    <div class="form-group col-xs-2">
+	    </div>
+	    <div class="form-group col-xs-3">
+		<button role="button" id="rep_exit_detallado" style="font-weight: bold;width: 100%"  class="btn btn-primary">
+		    <span class="glyphicon glyphicon-file"></span>&nbsp;Reporte Detallado PDF</button>
+	    </div>
+	    <div class="form-group col-xs-2">
+	    </div>
+        </div>
+
+        <br/>
+        <br/>
+        <br/>
+        <br/>
+    </div>
+
+    
+    <div style="width: 80%;" style="text-align: center" class="panel panel-success">
+        <div class="panel-heading">
+            Listado Total de Exit Polls en las que participo un Candidato en Especifico.
+        </div>
+        <br/>
+	<div id="alert_1" hidden="hidden" class="alert alert-dismissible alert-danger">
+	    <strong>Disculpe!</strong> Debe <a href="#" class="alert-link">Seleccionar el Candidato</a> para poder exportar el PDF.
+	</div>
+	<br/>
+        <div class="form-inline" style="text-align: left;font-weight: bold">
+            <div class="form-group col-xs-2">
+            </div>
+            <div class="form-group col-xs-1">
+                <label>Candidatos: </label>
+            </div>
+            <div class="form-group col-xs-6">
+                <select class="form-control select2 input-sm " style="width:100%;" id="id_candidatos" name="id_candidatos">
+                    <option value="0">Seleccione</option>
+                    {% for n in candidatos %}
+                    <option value="{{n.id}}">{{ n.nombre }} {{ n.apellido }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group col-xs-3">
+		
+            </div>
+        </div>
+	<br/>
+        <br/>
+	<div class="form-inline" style="text-align: center;font-weight: bold">
+	    <div class="form-group col-xs-2">
+	    </div>
+	    <div class="form-group col-xs-3">
+		<button role="button" id="det_candidato" style="font-weight: bold;width:100%;"  class="btn btn-success">
+		    <span class="glyphicon glyphicon-file"></span>&nbsp;Inf. Básica Candidato - PDF</button>
+	    </div>
+	    <div class="form-group col-xs-2">
+	    </div>
+	    <div class="form-group col-xs-3">
+		<button role="button" id="det_candidato_total" style="font-weight: bold;width:100%;"  class="btn btn-success">
+		    <span class="glyphicon glyphicon-file"></span>&nbsp;Inf. Detallada Candidato - PDF</button>
+	    </div>
+	    <div class="form-group col-xs-2">
+	    </div>
+        </div>
+        <br/>
+        <br/>
+        <br/>
+        <br/>
+
+
+
+
+
+    
+</body>
+</html>
+
+{% endblock %}
+
+
+

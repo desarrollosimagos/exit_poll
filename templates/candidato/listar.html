@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+{% block contenido %}
+
+{% load templatag_grupos %}
+{% ifusergroup Registro %}
+<script>
+$(document).ready(function(){
+    var TUbch = $('#tab_candidato').dataTable({
+        "iDisplayLength": 25,
+        "iDisplayStart": 0,
+        "sPaginationType": "full_numbers",
+        "aLengthMenu": [25, 50, 75, 100],
+        "oLanguage": {"sUrl": "/static/js/es.txt"},
+        "aoColumns": [
+            {"sClass": "registro center", "sWidth": "3%"},
+            {"sClass": "registro center", "sWidth": "3%"},
+            {"sClass": "registro center", "sWidth": "10%"},
+            {"sClass": "registro center", "sWidth": "15%"},
+            {"sClass": "registro center", "sWidth": "15%"},
+            {"sWidth": "3%", "bSortable": false, "sClass": "center sorting_false", "bSearchable": false},
+            {"sWidth": "3%", "bSortable": false, "sClass": "center sorting_false", "bSearchable": false},
+            {"sWidth": "3%", "bSortable": false, "sClass": "center sorting_false", "bSearchable": false},
+        ]
+    });
+    $('#enviar').click(function(){
+        url = '/candidatos/registrarcandidato/'
+        window.location = url
+    })
+    
+    $(".fancybox").fancybox({
+        
+            maxWidth: 300,
+            maxHeight: 500,
+            fitToView: false,
+    });    
+    
+
+});
+    function cambiar_status(pk_id,status) {
+        id_data= String(pk_id)
+        bootbox.confirm("¿Realmente desea cambiar el status?", function(result) {
+            if (result === true) {
+              
+                $.post('', {'pk': id_data, 'status': status, 'csrfmiddlewaretoken': "{{ csrf_token }}"}, function (response) {
+                    if (response == 'exito') {
+                        bootbox.alert("El estatus ha sido actualizado", function () {
+                          
+                        });
+                    }
+                });
+              
+            }else{
+                url = '/candidatos/'
+                window.location = url
+            }
+            
+        });
+    };
+</script>
+
+    <button role="button" class="btn btn-primary" style="font-weight: bold;font-size: 13px" id="enviar" >
+        &nbsp;<span class="glyphicon glyphicon-plus"></span>&nbsp;Agregar Candidato
+    </button>
+
+
+</Br>
+</Br>
+</Br>
+<div style="font-size: 14px;text-align: left;width:80%">
+    <img style="width:12px;height: 12px" src="{{ STATIC_URL }}img/yes.png"/> Candidato Activo
+    <br/>
+    <img style="width:12px;height: 12px" src="{{ STATIC_URL }}img/no.png"/> Candidato Inactivo
+</div>
+
+<div style="width:80%">
+  
+   
+    <table style="width:100%;" border="0" align="center" cellspacing="1" id="tab_candidato" align="center"
+           class="table table-bordered table-striped table-hover table-condensed dt-responsive table-responsive">
+    <thead style="font-size: 13px">
+        <tr class="info">
+            <th style='text-align: center' colspan="8">Listado de Candidatos</th>
+        </tr>
+        <tr class="info">
+            <th style='text-align: center'>Ítem</th>
+            <th style='text-align: center'>Activo</th>
+            <th style='text-align: center'>Cédula</th>
+            <th style='text-align: center'>Nombre</th>
+            <th style='text-align: center'>Apellido</th>
+            <th style='text-align: center'>Foto</th>
+            <th style='text-align: center'>Editar</th>
+            <th style='text-align: center'>Borrar</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for m in listar_candidato %}
+        <tr class="{% cycle 'impar' 'par' %}" style="font-size: 13px">
+            <td>
+                {{ forloop.counter }}
+            </td>
+            <td>
+                {%if m.candidato_activo == True %}
+                     <input type="checkbox" name="check" class="btn_check" onclick="cambiar_status('{{m.id}}',$(this).prop('checked'))" checked="checked"/>
+					{% else %}
+					<input type="checkbox" name="check" class="btn_check" onclick="cambiar_status('{{m.id}}',$(this).prop('checked'))"/>
+                {% endif %}
+            </td>
+            <td>
+                {{m.cedula}}
+            </td>
+            <td>
+                {{m.nombre}}
+            </td>
+             <td>
+                {{m.apellido}}
+            </td>
+            <td>
+                <a class="fancybox" rel="/imagenes/foto_candidato/" href="{{MEDIA_URL}}{{m.foto}}" title="{{m.nombre}} {{m.apellido}}">
+                        <img style="width:30px;height: 30px" src="{{MEDIA_URL}}{{m.foto}}" alt="" />
+                </a>
+            </td>
+              
+            <td style='text-align: center'>
+                <a href="{% url "editar_candidato" m.id %}"><img style="width:25px;height: 25px" src="{{ STATIC_URL }}img/edit.png"/></a>
+            </td>
+            <td style='text-align: center'>
+                <a href="{% url "borrar_candidato" m.id %}"><img style="width:25px;height: 25px" src="{{ STATIC_URL }}img/borrar.png"/></a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+
+{% else %}
+<p style="color: #FF0000; font-size: 18px">Disculpe No esta autorizado para esa área.</p>
+{% endifusergroup %}
+{% endblock %}

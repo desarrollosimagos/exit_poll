@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+{% extends 'base.html' %}
+
+{% block contenido %}
+
+<html>
+<head>
+    <title>Registrar Centros</title>
+</head>
+<script>
+$(document).ready(function() {
+    $("#id_cod_estado,#id_cod_municipio,#id_cod_parroquia").select2();
+    $('#cod_sector').numeric(); //Valida solo valores tipo texto 
+    $('#id_sector').alpha({allow:" "}); //Solo permite numeros 
+    $('#volver').click(function(){
+        url = '/configuraciones/topologia/sectores/'
+        window.location = url
+    })
+    $('#limpiar').click(function(){
+        $('#id_cod_estado').select2('val', '0');
+	$('#id_cod_municipio').select2('val', '0');
+	$('#id_cod_parroquia').select2('val', '0');
+    })
+    $('#registrar').click(function(e){ //Valida al guardar que el rago no sea menor 8 caracteres
+	e.preventDefault();
+	
+	$('input').on({
+	    keypress: function() {
+		$(this).parent('div').removeClass('has-error');
+	    }
+	});
+	
+	var estado    = $('#id_cod_estado').find('option').filter(':selected').val()
+	var municipio    = $('#id_cod_municipio').find('option').filter(':selected').val()
+	var parroquia    = $('#id_cod_parroquia').find('option').filter(':selected').val()
+	
+
+	
+	
+	if (estado == 0) {
+	    bootbox.alert('Disculpe, Debe Seleccionar el Estado', function() {	    
+		$('#id_cod_estado').select2('open');
+	    }); 
+	}
+	else if (municipio == 0) {
+	    bootbox.alert('Disculpe, Debe Seleccionar el Municipio', function() {	    
+		$('#id_cod_municipio').select2('open');
+	    });
+	}
+	else if (parroquia == 0) {
+	    bootbox.alert('Disculpe, Debe Seleccionar la Parroquia', function() {	    
+		$('#id_cod_parroquia').select2('open');
+	    });
+	}
+	else if ($('#cod_sector').val() == '') {
+	    bootbox.alert('Disculpe, Debe Colocar el Código del Sector', function() {	    
+		$('#cod_sector').parent('div').addClass('has-error');
+	    }); 
+	}
+	else if (($('#id_sector').val() == '')) {
+	    bootbox.alert('Disculpe, Debe Colocar el Nombre del Sector', function() {	    
+		$('#id_sector').parent('div').addClass('has-error');
+	    }); 
+	}
+	else {
+            $.post('',$('#id_form').serialize()+'&bandera=true',function(response){
+		if (response == 'existe_t') {
+		    bootbox.alert('Disculpe, Este Codigo y Nombre de Sector ya esta asociado a ese Estado', function() {	    
+			$('#id_sector').parent('div').addClass('has-error');
+		    }); 
+		}
+		else if (response == 'existe') {
+		    bootbox.alert('Disculpe, Este Codigo ya esta asociado a ese Estado', function() {	    
+			$('#cod_sector').parent('div').addClass('has-error');
+		    }); 
+		}
+		else{
+		    $('#id_form').submit(); 
+		}
+	    });
+        }
+    });
+});
+</script>
+<body>
+    {% load templatag_grupos %}
+    {% ifusergroup Topologia %}
+    <br/>
+    <br/>
+    <form method="post" id="id_form">
+	{% csrf_token %}
+	<div style="width: 80%" class="panel panel-primary">
+	    <div class="panel-heading">
+              Registrar Sector
+            </div>
+            <br/>
+	    <fieldset><legend class="titulo">Datos del Sector</legend></fieldset>
+	    <div class="form-inline">
+		<div class="form-group col-xs-4" style="font-weight: bold">
+		    <label>Estado:&nbsp;&nbsp;</label>
+		    <select id="id_cod_estado" style="width: 80%" name="estado" class="form-control select2 input-sm" >
+			<option value="0">Seleccione</option>
+			{% for e in list_estado %}
+			    <option value='{{e.cod_estado}}'>{{ e.estado }}</option>
+			{% endfor %}
+		    </select>
+		</div>
+		<div class="form-group col-xs-4" style="font-weight: bold">
+		    <label>Municipio:&nbsp;&nbsp;</label>
+		    <select id="id_cod_municipio" style="width: 70%" class="form-control select2 input-sm" name="municipio" >
+			<option value="0" selected="selected">Seleccione</option>
+		    </select>
+		</div>
+		<div class="form-group col-xs-4" style="font-weight: bold">
+		    <label>Parroquia:&nbsp;&nbsp;</label>
+		    <select id="id_cod_parroquia" name="parroquia" class="form-control select2 input-sm" style="width: 70%" >
+			<option value="0" selected="selected">Seleccione</option>
+		    </select>
+		</div>
+            </div>
+	    <br/>
+	    <br/>
+	    <br/>
+            <div class="form-inline">
+		<div class="form-group col-xs-4" style="text-align: left;font-weight: bold">
+		    <label>C&oacute;digo:&nbsp;&nbsp;</label>
+		    <input type="text" id="cod_sector" maxlength="2" style="width: 80%" name="cod_s" placeholder="Ej: 5"/>
+		</div>
+		<div class="form-group col-xs-8" style="font-weight: bold">
+		    <label>Nombre:&nbsp;&nbsp;&nbsp;&nbsp;</label>
+		    <input type="text" style="width: 86%" id="id_sector" placeholder="Nombre completo del Sector" maxlength="125" name="sector" class="form-control input-sm" />
+		</div>
+            </div>
+	    <input id='user_create' type="hidden" name='user_create' value='{{ user.id }}'>
+	    <br/>
+	    <br/>
+	    <br/>
+             <div class="row" style="text-align: center">
+		<button type="button" id="volver" style="font-weight: bold;font-size: 13px" class="btn btn-warning " >
+		    &nbsp;<span class="glyphicon glyphicon-chevron-left"></span>&nbsp;Volver
+		</button>
+		<button type="submit" id="registrar" style="font-weight: bold;font-size: 13px" class="btn btn-info"/>
+		    &nbsp;<span class="glyphicon glyphicon-floppy-disk"></span>&nbsp;Registrar
+		</button>
+		<button type="reset" id="limpiar" style="font-weight: bold;font-size: 13px" class="btn btn-success"/>
+		    &nbsp;<span class="glyphicon glyphicon-retweet"></span>&nbsp;&nbsp;Limpiar
+		</button>
+	    </div>
+            <br/>
+        </div>
+	
+    </form>
+    {% else %}
+    <p style="color: #FF0000; font-size: 18px">Disculpe No esta autorizado para esa área.</p>
+    {% endifusergroup %}
+</body>
+</html>
+{% endblock %}

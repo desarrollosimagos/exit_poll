@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+{% extends 'base.html' %}
+
+{% block contenido %}
+<html>
+<head>
+    <title>Modificar Circuito</title>
+</head>
+
+<script type="text/javascript">
+$(document).ready(function(){
+    $("#id_cod_estado").select2();
+    $('#id_n_circuito').numeric(); //Valida solo valores tipo texto
+    $('#id_num_max_candidatos').numeric(); //Valida solo valores tipo texto
+    $('#registrar').click(function(e){ //Valida al guardar que el rago no sea menor 5 caracteres
+	e.preventDefault();
+	if (($('#id_num_max_candidatos').val() == '')) {
+	    alert('Debe Colocar el Número de Candidatos');
+	    $('#id_num_max_candidatos').css('border','1px solid red');
+	}
+	else{
+	    $('#id_n_circuito,#id_cod_estado').prop('disabled',false);
+	    $('form').submit();
+	    $('#id_n_circuito,#id_cod_estado').prop('disabled',true);
+	}
+    });
+    $('#volver').click(function(){
+        url = '/configuraciones/circuitos/'
+        window.location = url
+    })
+});
+</script>
+<body>
+    {% load templatag_grupos %}
+    {% ifusergroup Topologia %}
+    
+    <form method="post">
+    </br>
+    </br>
+    
+	{% csrf_token %}
+	
+	<div style="width: 80%" class="panel panel-primary">
+            <div class="panel-heading">
+              <label class="panel-title">Modificar Circuito</label>
+            </div>
+	    </br>
+	    <fieldset><legend class="titulo">Datos del Circuito</legend></fieldset>
+            </br>
+	    <div class="panel-body">
+                <div class="col-xs-2" >Estado</div>
+                <div class="col-xs-3" >
+		    <select id="id_cod_estado" disabled="disabled" class="form-control select2 input-sm" style="font-weight: bold" name="estado">
+			<option value="">-----------------------------</option>
+			{% for e in list_e %}
+			    {% if e.cod_estado == obj_reg_cir.estado_id%}
+				<option value='{{e.cod_estado}}' selected='selected'>{{ e.estado }}</option>
+			    {% endif %}
+			    {% if not e.cod_estado == obj_reg_cir.estado_id %}
+				<option value='{{e.cod_estado}}'>{{ e.estado }}</option>
+			    {% endif %}
+			{% endfor %}
+		    </select>
+		    </select>    
+		</div>
+		<div class="col-xs-3">Número del Circuito</div>
+		    <div class="col-xs-4">
+			<input id="id_n_circuito" maxlength="2" style="font-weight: bold" name="n_circuito" value='{{obj_reg_cir.n_circuito}}' type="text" disabled="disabled" />
+		    </div>
+		</div>
+           
+	    <div class="panel-body">
+		<div class="col-xs-2">&nbsp;</div>
+                <div class="col-xs-4" >Número de Candidatos</div>
+                <div class="col-xs-4">
+		    <input id="id_num_max_candidatos" style="font-weight: bold" name="num_max_candidatos" value='{{obj_reg_cir.num_max_candidatos}}' type="text" />
+		</div>
+		<div class="col-xs-2">&nbsp;</div>
+            </div>
+	    </br>
+	    <input id='edit_user_create' type="hidden" name='user_create' value="{{obj_reg_cir.user_create.id }}">
+	    
+            <div class="row" style="text-align: center">
+		<button type="button" id="volver" style="font-weight: bold;font-size: 13px" class="btn btn-warning " >
+		    &nbsp;<span class="glyphicon glyphicon-chevron-left"></span>&nbsp;Volver
+		</button>
+		<button type="submit" id="registrar" style="font-weight: bold;font-size: 13px" class="btn btn-info"/>
+		    &nbsp;<span class="glyphicon glyphicon-floppy-disk"></span>&nbsp;Guardar Cambios
+		</button>
+	    </div>
+		<input id='user_update' type="hidden" name='user_update' value='{{ user.id }}'
+	    </br>
+	    </br>
+            
+	    
+        </div>
+	{% else %}
+	<p style="color: #FF0000; font-size: 18px">Disculpe No esta autorizado para esa área.</p>
+	{% endifusergroup %}
+    </form>
+    
+</body>
+</html>
+{% endblock %}

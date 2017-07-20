@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+{% extends 'base.html' %}
+
+{% block contenido %}
+<html>
+<head>
+    <title>Modificar Candidato</title>
+</head>
+<script type="text/javascript">
+$(document).ready(function(){
+	var foto1 =  $("#div_foto1").val();
+	
+	$("#id_foto").fileinput({
+        browseClass: "btn btn-primary btn-block",
+        showCaption: false,
+        showRemove: false,
+        showUpload: false,
+        browseLabel: "Imagen",
+        maxFileSize: 80,
+        allowedFileExtensions: ["jpg", "png"],
+        elErrorContainer: "#errorBlock",
+        msgSizeTooLarge:'Archivo muy pesado "{name}". (<b>{size} KB</b>) excede el tamaño máximo que es de <b>{maxSize} KB',
+        msgInvalidFileExtension: 'Extensiones invalidad "{name}". Solo admite archivos"{extensions}".',
+        initialPreview: [
+        "<img src='"+foto1+"' style='width:250px;height:135px;' class='file-preview-image' alt='The Moon' title='The Moon'>",
+        ],
+    });
+    $("#id_partido,#id_sexo").select2();
+    $('#id_edad').numeric(); //Valida solo valores numericos
+    $('#id_twitter').alphanumeric({allow:"@-_"}); 
+    $('#registrar').click(function(e){ //Valida al guardar que el rago no sea menor 3 caracteres
+	e.preventDefault();
+	
+	$('select').on({
+	    change: function() {
+		$(this).parent('div').removeClass('has-error');
+	    }
+	});
+	$('input').on({
+	    keypress: function() {
+		$(this).parent('div').removeClass('has-error');
+	    }
+	});
+	
+	var sexo    = $('#id_sexo').find('option').filter(':selected').val()
+	var partido = $('#id_partido').find('option').filter(':selected').val()
+	
+	if ($('#id_edad').val() < 18) {
+	    bootbox.alert('Disculpe, El candidato es menor de edad', function() {	    
+		$('#id_edad').parent('div').addClass('has-error');
+	    });
+	}
+	else if (sexo == 0) { 
+	    bootbox.alert("Debe indicar el Sexo", function() {
+            $('#id_sexo').parent('div').addClass('has-error'); // colocar class has-error de boostrap   
+            });
+	    
+	}
+	else if (partido == 0) { 
+	    bootbox.alert("Debe indicar el Partido", function() {
+             $('#id_partido').parent('div').addClass('has-error'); // colocar class has-error de boostrap   
+            });
+	    
+	}
+	else {
+	    //$('#id_cedula').prop('disabled',false);
+	    $('form').submit();
+	    //$('#id_cedula').prop('disabled',true);
+	}
+    });
+    $('#volver').click(function(){
+        url = '/candidatos/'
+        window.location = url
+    })
+});
+
+</script>
+{% load templatag_grupos %}
+{% ifusergroup Registro %}
+<body>
+    </Br>
+
+    
+  
+  <form method="post" enctype="multipart/form-data">
+	{% csrf_token %}
+	<br/>
+	
+	<div style="width: 80%;" class="panel panel-primary">
+	    <div class="panel-heading">
+	      <label class="panel-title">Modificar Datos del Candidato</label>
+	    </div>
+	    <br/>
+	    <fieldset><legend class="titulo">Datos Personales del Candidato</legend></fieldset>
+	    <br/>
+	    <div class="form-inline" style="text-align: left;font-weight: bold;font-size: 13px">
+		<div class="col-xs-4"></div>
+		<div class="col-xs-1">Cédula:</div>
+		<div class="col-xs-3">
+		    <input id="id_cedula" style="width: 100%;font-size: 13px" placeholder="Cédula del Candidato" maxlength="8" name="cedula" type="text" value='{{obj_reg_can.cedula}}' />
+	    </div>
+	    <br/>
+	    <br/>
+	    <br/>
+	    <div class="form-inline" style="text-align: left;font-weight: bold;font-size: 13px">
+		<div class="form-group col-xs-1">
+		    <label>Nombre: </label>
+		</div>
+		<div class="form-group col-xs-5">
+		    <input id="id_nombre" style="width: 100%;font-size: 13px" maxlength="40" placeholder="Nombre Completo" name="nombre" type="text" value='{{obj_reg_can.nombre}}' />
+		</div>
+		<div class="form-group col-xs-1">
+		    <label>Apellido: </label>
+		</div>
+		<div class="form-group col-xs-5">
+		    <input id="id_apellido" style="width: 100%;font-size: 13px" maxlength="40" placeholder="Apellido Completo" name="apellido" type="text" value='{{obj_reg_can.apellido}}' />
+		</div>
+	    </div>
+	    <br/>
+	    <br/>
+	    <br/>
+	    <div class="form-inline" style="text-align: left;font-weight: bold;font-size: 13px">
+		<div class="form-group col-xs-1">
+		    <label>Edad: </label>
+		</div>
+		<div class="form-group col-xs-5">
+		    <input id="id_edad" name="edad" style="width: 100%;font-size: 13px" placeholder="Edad" maxlength="2" min="18" type="text" value='{{obj_reg_can.edad}}' />
+		</div>
+		<div class="form-group col-xs-1">
+		    <label>Sexo: </label>
+		</div>
+		<div class="form-group col-xs-5">
+		    <select style="width: 100%;font-size: 13px"  id="id_sexo" name="sexo">
+			<option value='0'>----------------</option>
+			{% if obj_reg_can.sexo == 0 %}
+			    <option value=0 selected='selected'>----------------</option>
+			{% endif %}
+			{% if not obj_reg_can.sexo == 0 %}
+			    <option value=0>----------------</option>
+			{% endif %}
+			{% if obj_reg_can.sexo == '1' %}
+			    <option value='1' selected='selected'>Femenino</option>
+			{% endif %}
+			{% if not obj_reg_can.sexo == '1' %}
+			    <option value='1'>Femenino</option>
+			{% endif %}
+			{% if obj_reg_can.sexo == '2' %}
+			    <option value='2' selected='selected'>Masculino</option>
+			{% endif %}
+			{% if not obj_reg_can.sexo == '2' %}
+			    <option value='2'>Masculino</option>
+			{% endif %}
+		    </select>
+		</div>
+	    </div>
+	    <br/>
+	    <br/>
+	    <br/>
+	    <div class="form-inline" style="text-align: left;font-weight: bold;font-size: 13px">
+		<div class="form-group col-xs-1">
+		    <label>Partido: </label>
+		</div>
+		<div class="form-group col-xs-5">
+		    <select id="id_partido" name="part_politico" class="form-control select2 input-sm " style="width: 100%;font-size: 13px" required=True >
+			<option value="0">-----------------------------</option>
+			{% for p in list_partido %}
+			    {% if p.id == obj_reg_can.part_politico_id%}
+				<option value='{{p.id}}' selected='selected'>{{ p.n_partidos }}</option>
+			    {% endif %}
+			    {% if not p.id == obj_reg_can.part_politico_id %}
+				<option value='{{p.id}}'>{{ p.n_partidos }}</option>
+			    {% endif %}
+			{% endfor %}
+		    </select>
+		</div>
+		<div class="form-group col-xs-1">
+		    <label>Twiter: </label>
+		</div>
+		<div class="form-group col-xs-5">
+		    <input style="width: 100%;font-size: 13px" id="id_twitter" maxlength="40" name="twitter" type="text" value='{{obj_reg_can.twitter}}' />
+		</div>
+	    </div>
+	    <br/>
+	    <br/>
+	    <br/>
+	    <div class="form-inline" >
+		<div class="form-group col-xs-6" style="text-align: left;font-weight: bold;font-size: 13px">
+		    <label>Activo:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
+		    <input type="checkbox" id="candidato_activo" name="candidato_activo"
+		    {% if obj_reg_can.candidato_activo == True %}
+			   checked="checked"
+		    {% endif %}/>
+		    <label>&nbsp;&nbsp;&nbsp; **¿Candidato Activo en el CNE?</label>
+		</div>
+		<div class="form-group col-xs-1" style="text-align: left;font-weight: bold;font-size: 13px">
+		    <label>Foto: </label>
+		</div>
+		<div class="form-group col-xs-5">
+			<div class="help-block file-error-message" id="errorBlock" style="display: none;">Error de Archivo. Sólo son soportados archivos ".png, .jpg".</div>
+		    <label class="cargar">
+			<input type="hidden" value="{{MEDIA_URL}}{{obj_reg_can.foto}}" id='div_foto1'/>
+			<input type='file' id='id_foto' name='foto' value='{{obj_reg_can.foto}}' onchange="PreviewImage();">
+		    </label>
+		</div>
+	    </div>
+	    
+	    <input id='user_update' type="hidden" name='user_update' value='{{ user.id }}'>
+	    <input id='user_create' type="hidden" name='user_create' value='{{obj_reg_can.user_create.id}}'>
+	    <br/>
+	    <br/>
+	    <br/>
+	    <div class="row" style="text-align: center">
+		<button type="button" id="volver" style="font-weight: bold;font-size: 13px" class="btn btn-warning " >
+		    &nbsp;<span class="glyphicon glyphicon-chevron-left"></span>&nbsp;Volver
+		</button>
+		<button type="submit" id="registrar" style="font-weight: bold;font-size: 13px" class="btn btn-info"/>
+		    &nbsp;<span class="glyphicon glyphicon-floppy-disk"></span>&nbsp;Guardar Cambios
+		</button>
+	    </div>
+	    <br/>
+	</div>
+    </form>
+</body>
+{% else %}
+<p style="color: #FF0000; font-size: 18px">Disculpe No esta autorizado para esa área.</p>
+{% endifusergroup %}
+</html>
+{% endblock %}

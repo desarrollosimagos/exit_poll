@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+{% extends 'base.html' %}
+
+{% block contenido %}
+<html>
+<head>
+    <title>Modificar Candidato</title>
+</head>
+<script type="text/javascript">
+$(document).ready(function(){
+    $('#id_cedula').numeric(); //Valida solo valores numericos
+    $('#id_edad').numeric(); //Valida solo valores numericos
+    $('#id_twitter').alphanumeric({allow:"@-_"}); 
+    $('#id_nombre').alpha({allow:" "}); //Solo permite texto
+    $('#id_apellido').alpha({allow:" "}); //Solo permite texto
+    $('#modificar').click(function(e){ //Valida al guardar que el rago no sea menor 3 caracteres
+	if ($('#id_edad').val() < 18) {
+	    alert('El candidato es menor de edad');
+	    return false;
+	}
+	if ($('#id_cedula').val().length < 7) {
+	    alert('Cedula Invalida');
+	    return false;
+	}
+	else {
+	    alert('Modificación Exitosa');
+	}
+    });
+});
+
+</script>
+
+<body>
+    <form method="post" id="mod_candi" enctype="multipart/form-data">
+	{% csrf_token %}
+	<table style="width: 70%" align="justify">
+	    <tr>
+		<td colspan="4" align= "center" style='background-color: #FF5E00; color: #FFFFFF;height: 25px;'>
+		    <strong>Modificar Candidatos</strong>
+		</td>
+	    </tr>
+	    <tr>
+                    <td colspan="4">&nbsp;</td>
+            </tr>
+	    <tr>
+		<td>Nombre</td>
+		<td>
+		    <input id="id_nombre" maxlength="100" name="nombre" type="text" value='{{obj_reg_can.nombre}}' />
+		</td>
+		<td>Apellido</td>
+		<td>
+		    <input id="id_apellido" maxlength="100" name="apellido" type="text" value='{{obj_reg_can.apellido}}' />
+		</td>
+	    </tr>
+	    <tr>
+		<td>Cédula</td>
+		<td>
+		    <input id="id_cedula" maxlength="8" name="cedula" type="text" value='{{obj_reg_can.cedula}}' />
+		</td>
+		<td>Edad</td>
+		<td>
+		    <input id="id_edad" name="edad" type="text" value='{{obj_reg_can.edad}}' />
+		</td>
+		
+	    </tr>
+	    <tr>
+		<td>Sexo</td>
+		<td>
+		     <select required id="id_sexo" name="sexo">
+			{% if obj_reg_can.sexo == 0 %}
+			    <option value=0 selected='selected'>----------------</option>
+			{% endif %}
+			{% if not obj_reg_can.sexo == 0 %}
+			    <option value=0>----------------</option>
+			{% endif %}
+			{% if obj_reg_can.sexo == '1' %}
+			    <option value='1' selected='selected'>Masculino</option>
+			{% endif %}
+			{% if obj_reg_can.sexo == '1' %}
+			    <option value='1'>Masculino</option>
+			{% endif %}
+			{% if obj_reg_can.sexo == '0' %}
+			    <option value='0' selected='selected'>Femenino</option>
+			{% endif %}
+			{% if obj_reg_can.sexo == '0' %}
+			    <option value='0'>Femenino</option>
+			{% endif %}
+		    </select>
+		</td>
+		<td>Partido</td>
+		<td>
+		    <select id="id_partido" name="part_politico" required=True >
+			<option value="">-----------------------------</option>
+			{% for p in list_partido %}
+			    {% if p.id == obj_reg_can.part_politico_id%}
+				<option value='{{p.id}}' selected='selected'>{{ p.n_partidos }}</option>
+			    {% endif %}
+			    {% if not p.id == obj_reg_can.part_politico_id %}
+				<option value='{{p.id}}'>{{ p.n_partidos }}</option>
+			    {% endif %}
+			{% endfor %}
+		    </select>
+		</td>
+	    </tr>
+	    <tr>
+		<td>Foto</td>
+		<td>
+		    <input id="id_foto" name="foto" type="file" value='{{obj_reg_can.foto}}' /></p>
+		</td>
+		<td>Twitter</td>
+		<td>
+		    <input id="id_twitter" maxlength="200" name="twitter" type="text" value='{{obj_reg_can.twitter}}' />
+		</td>
+	    </tr>	    
+	    <tr>
+		<td>
+		    <input id='user_create' type="hidden" name='user_create' value='{{obj_reg_can.user_create.id}}'>
+		    
+		</td>
+	    </tr>
+	    <tr>
+		<td>
+		    <input id='user_update' type="hidden" name='user_update' value='{{ user.id }}'>
+		</td>
+	    </tr>
+	    <tr>
+                    <td colspan="4">&nbsp;</td>
+            </tr>
+	    <tr>
+		<td colspan="6"  align= "center"><input type="submit" id="modificar" value="Modificar"/></td>
+	    </tr>
+	</table>
+    </form>
+</body>
+</html>
+{% endblock %}

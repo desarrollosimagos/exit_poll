@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block contenido %}
+
+<html>
+<head>
+    <title>Eliminar Candidato</title>
+</head>
+
+{% load templatag_grupos %}
+{% ifusergroup Registro %}
+<script>
+$(document).ready(function() {
+    $('#volver').click(function(){
+        url = '/candidatos/'
+        window.location = url
+    })
+});
+</script>
+<body>
+    </Br>
+    <label class="tit-elim">Eliminar Datos del Candidato</label>
+   
+    <form method="post">
+	{% csrf_token %}
+	<h3>¿Está seguro que quiere borrar este Candidato "{{ borrar_candidato }}" ?</h3>
+	{% if cantidad > 0 %}
+	    <h4>Disculpe, pero no puede Eliminar este Candidato porque ya esta <span style="color: red"> vinculado a 1 o más Procesos de Votación</span></h4>
+	{% endif%}
+	<button style="font-weight: bold;font-size: 13px" type="button" id="volver" class="btn btn-warning"/>
+	    <span class="glyphicon glyphicon-chevron-left"></span>&nbsp;Volver
+	</button>
+	<button style="font-weight: bold;font-size: 13px" type="submit" id="eliminar" class="btn btn-danger "
+	    {% if cantidad > 0 %}
+		disabled="disabled" 
+	    {% endif %}
+	/><span class="glyphicon glyphicon-remove"></span>&nbsp;Eliminar
+	</button>
+	
+    </form>
+</body>
+{% else %}
+<p style="color: #FF0000; font-size: 18px">Disculpe No esta autorizado para esa área.</p>
+{% endifusergroup %}
+</html>
+{% endblock %}
+

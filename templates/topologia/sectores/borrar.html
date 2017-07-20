@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+{% extends 'base.html' %}
+
+{% block contenido %}
+<html>
+<head>
+    <title>Eliminar Centros</title>
+</head>
+{% load templatag_grupos %}
+{% ifusergroup Configuraciones %}
+<script>
+$(document).ready(function() {
+    $('#volver,#eliminar').click(function(){
+        url = '/configuraciones/topologia/sectores/'
+        window.location = url
+    })
+});
+
+</script>
+
+
+<body>
+    
+    <form method="post">{% csrf_token %}
+    </br>
+    </br>
+    <label class="tit-elim">Eliminar Sector</label>
+    
+	<h3>¿Está seguro que quiere borrar este Sector "{{ borrar_sector }}" ?</h3>
+	{% if cantidad > 0 %}
+	    <h4>Disculpe, pero no puede Eliminar este Sector porque ya esta <span style="color: red"> vinculado a 1 o más Poligonal(es)</span></h4>
+	{% endif%}
+	<button style="font-weight: bold;font-size: 13px" type="button" id="volver" class="btn btn-warning"/>
+	    <span class="glyphicon glyphicon-chevron-left"></span>&nbsp;Volver
+	</button>
+	<button style="font-weight: bold" type="submit" id="eliminar" class="btn btn-danger "
+	    {% if cantidad > 0  %}
+		disabled="disabled" 
+	    {% endif %}
+	/><span class="glyphicon glyphicon-remove"></span>&nbsp;Eliminar
+	</button>
+
+
+    </form>
+</body>
+{% else %}
+<p style="color: #FF0000; font-size: 18px">Disculpe No esta autorizado para esa área.</p>
+{% endifusergroup %}
+</html>
+{% endblock %}

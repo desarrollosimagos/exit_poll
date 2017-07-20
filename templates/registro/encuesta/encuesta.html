@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+{% extends 'base2.html' %}
+
+{% block contenido %}
+<html>
+<head>
+    <title>Registrar Grupo Etareo</title>
+</head>
+<script type="text/javascript">
+$(document).ready(function(){
+	{% load templatag_grupos %}
+		{% ifusergroup Web %}
+			
+		{% else %}
+			$("#id_tipo").select2();
+		{% endifusergroup %}
+    $('#id_nombre').alphanumeric({allow:" +-*/=.,¡!'¿?()%:;_"}); //Valida solo valores tipo texto en descripción
+    
+	$('#id_tipo').change(function() {
+		var tipo = $(this).val();
+		
+		if (tipo == 2) { //TODO
+			$('#continua').prop('checked',true).prop('disabled',false)
+			$('#nocontinua,#continua,#no_continua,#continua').prop('disabled',true)
+		}else{ //Por Municipio
+			$('#nocontinua,#continua,#no_continua,#continua').prop('disabled',false).prop('checked',false)
+		}
+	});
+	
+	$('#div_genero').on('click','div > label',function(){
+		var este = $(this).attr('id');
+		if (este == 'continua') {
+				$('#continua').prop('checked',true);
+		} else if (este == 'no_continua') {
+				$('#nocontinua').prop('checked',true);
+		}
+	});
+	
+	$('#help_continua').click(function(e){
+		bootbox.alert({
+			title: 'Tipo de aplicación Continua',
+			message: 'Las encuestas de aplicación CONTINUA, son aquellas que podrán aplicarse varias veces sin importar que los encuestados se encuentre en la misma red de computadoras.',
+		})
+    });
+	//Mensaje de ayuda encuesta No Continua
+	$('#help_nocontinua').click(function(e){
+		bootbox.alert({
+			title: 'Tipo de aplicación No Continua',
+			message: 'Las encuestas de aplicación NO CONTINUA, son aquellas que podrán aplicarse una (1) sola vez por encuestado, sin importar que se encuentre en la misma  red ya sea de trabajo o domestica. ',
+		})
+    });
+	
+    $('#Registrar').click(function(e){ //Valida al guardar que el rago no sea menor 3 caracteres
+        e.preventDefault();
+		var tipo = $('#id_tipo').find('option').filter(':selected').val()
+		
+		var id = $(this).attr('id');
+		$('input').on({
+			keypress: function() {
+			$(this).parent('div').removeClass('has-error');
+			}
+		});
+		$('select').on({
+			change: function() {
+				$(this).parent('div').removeClass('has-error');
+			}
+		});
+		
+		if (($('#id_tipo').val() == 0)) {
+			bootbox.alert("Disculpe, Debe seleccionar el tipo de Encuesta", function() {
+				$('#id_tipo').parent('div').addClass('has-error'); // colocar class has-error de boostrap
+				$('#id_tipo').select2('open') 
+			});
+		}else if ((tipo != 2) && (!$('input[name="tipo_aplicacion"]').is(':checked'))) {
+			bootbox.alert('Disculpe, seleccionar el tipo de aplicación', function() {	    
+			});
+		}else if (($('#id_nombre').val().trim() == '')) {
+			bootbox.alert("Debe colocar el nombre que llevara su encuesta", function() {
+				$('#id_nombre').parent('div').addClass('has-error'); // colocar class has-error de boostrap
+				$('#id_nombre').focus()
+			});
+		}else{
+			//bootbox.alert("Registro Satisfactorio", function() {
+			//});
+			$('#id_estatus,#nocontinua,#continua,#no_continua,#continua').prop('disabled',false);
+			$('#form_encuesta').submit();
+			$('#id_estatus,#nocontinua,#continua,#no_continua,#continua').prop('disabled',true);
+			
+			
+			//alert("Registro de nombre de encuesta con exito, a continuación procesa a registrar las preguntas")
+	    
+		}
+    });
+    $('#volver').click(function(){
+        url = '/encuestas/'
+        window.location = url
+    })
+});
+</script>
+<body>
+    {% load templatag_grupos %}
+    {% ifusergroup Registro %}
+    <br/>
+    <br/>
+
+    <form id="form_encuesta" method="post" >
+	{% csrf_token %}
+
+	<div style="width: 80%;" class="panel panel-primary">
+            <div class="panel-heading">
+              <label class="panel-title">Registrar Encuesta</label>
+            </div>
+            <br/>
+		<legend style="padding-bottom: 2%" class="titulo">Datos del la encuesta</legend>
+	    <br/>
+
+	    <div class="form-inline">
+		
+		<div class="form-group col-xs-1"></div>
+		<div class="form-group col-xs-1">
+		    <label>Encuesta:</label>
+		</div>
+		<div class="form-group col-xs-1">
+		    <span style="color: red"> {{cod_encuesta}} </span>
+		    
+		</div>
+		<div class="form-group col-xs-6"><input id="id_cod_encuesta" name="cod_encuesta" type="hidden"  value="{{cod_encuesta}}" /></div>
+		
+		<input id="id_estatus" name="estatus" type="hidden"  value="1" />
+		<div class="form-group col-xs-1">
+		    <label>Status:</label>
+		</div>
+		<div class="form-group col-xs-2">
+		    <span id="id_estatus" name="estatus" value='' disabled="disabled" style="color: red">Borrador</span>
+		</div>
+		<br/>
+		<br/>
+		<br/>
+		
+		<div class="form-group col-md-1">
+		</div>
+		<div class="form-group col-md-1">
+		    <label>Tipo:</label>
+		</div>
+		{% ifusergroup Web %}
+		<div class="form-group col-xs-2">
+		    <span name="tipo" style="color: #017F09">Web</span>
+			<input id="id_tipo" name="tipo" type="hidden"  value="1" />
+		</div>
+		{% else%}
+		<div class="form-group col-xs-2">
+			<select style="width:100%;" class="form-control input-sm" id="id_tipo" name="tipo">
+				<option value="0">Seleccione</option>
+				<option value="1">Web</option>
+				<option value="2">Móvil</option>
+				<option value="3">Web y Móvil</option>
+			</select>
+		</div>
+		{% endifusergroup %}
+		<div id="div_genero" class="form-group col-md-8 text-center">
+			<div class="form-group col-md-2"></div>
+			<div class="form-group col-md-3">Tipo de Aplicación:</div>
+			<div class="form-group col-md-3 " >
+				<input type="radio" id="continua" name="tipo_aplicacion" value="1" />
+				<label id="continua">Continua
+				</label>
+				<img id="help_continua" style="width: 18px; height: 18px;cursor: pointer" src="{{ STATIC_URL }}img/help_verde.jpg"/>
+			</div>
+			<div class="form-group col-md-3" >
+				<input type="radio" id="nocontinua" name="tipo_aplicacion" value="2" />
+				<label id="no_continua">No Continua 
+				</label>
+				<img id="help_nocontinua" style="width: 18px; height: 18px;cursor: pointer" src="{{ STATIC_URL }}img/help_azul.jpg"/>
+			</div>
+		</div>
+		<br/>
+		<br/>
+		<br/>
+		
+		<div class="form-group col-xs-1"></div>
+		<div class="form-group col-xs-1">
+		    <label>Nombre:</label>
+		</div>
+		<div class="form-group col-xs-9">
+		    <input id="id_nombre" maxlength="150" placeholder="Nombre de la Encuesta" style="width: 100%;font-size: 13px" name="nombre" type="text" />
+		</div>
+		<div class="form-group col-xs-1">
+		    
+		</div>
+		
+		
+		<br/>
+		<br/>
+		<br/>
+		<div class="row" style="text-align: center">
+			<button type="button" id="volver" style="font-weight: bold;font-size: 13px" class="btn btn-warning " >
+				&nbsp;<span class="glyphicon glyphicon-chevron-left"></span>&nbsp;Volver
+			</button>
+			<button type="submit" id="Registrar" style="font-weight: bold;font-size: 13px" class="btn btn-info"/>
+				&nbsp;<span class="glyphicon glyphicon-floppy-disk"></span>&nbsp;Registrar Encuesta
+			</button>
+        </div>
+		<div class="form-group col-xs-2"></div>
+	    </div>
+	    <br/>
+	    <br/>
+	    <br/>
+            <br/>
+
+	    <input id='user_create' type="hidden" name='user_create' value='{{ user.id }}'>
+
+	    <br/>
+	    <br/>
+        </div>
+
+	
+	
+	
+	
+    </form>
+    {% else %}
+    <p style="color: #FF0000; font-size: 18px">Disculpe No esta autorizado para esa área.</p>
+    {% endifusergroup %}
+</body>
+</html>
+{% endblock %}

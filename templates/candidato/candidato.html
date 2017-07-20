@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+{% extends 'base.html' %}
+
+{% block contenido %}
+
+<html>
+<head>
+    <title>Registrar Candidatos</title>
+</head>
+<script type="text/javascript">
+$(document).ready(function(){
+	//Estilos y validaciones para las fotos
+    $("#id_foto").fileinput({
+        browseClass: "btn btn-primary btn-block",
+        showCaption: false,
+        showRemove: false,
+        showUpload: false,
+        browseLabel: "Imagen",
+        maxFileSize: 80,
+        allowedFileExtensions: ["jpg", "png"],
+        elErrorContainer: "#errorBlock",
+        msgSizeTooLarge:'Archivo muy pesado "{name}". (<b>{size} KB</b>) excede el tamaño máximo que es de <b>{maxSize} KB',
+        msgInvalidFileExtension: 'Extensiones invalidad "{name}". Solo admite archivos"{extensions}".',
+        initialPreview: [
+        "<img src='/foto/picture.png' style='width:250px;height:145px;' class='file-preview-image' alt='The Moon' title='The Moon'>",
+        ],
+    });
+    
+    $('select').on({
+	change: function() {
+	    $(this).parent('div').removeClass('has-error');
+	}
+    });
+    $('input').on({
+	keypress: function() {
+	    $(this).parent('div').removeClass('has-error');
+	}
+    });
+    
+    $("#id_partido,#id_sexo").select2();
+    $('#id_cedula').numeric(); //Valida solo valores numericos
+    $('#id_edad').numeric(); //Valida solo valores numericos
+    $('#id_twitter').alphanumeric({allow:"@-_"}); 
+    $('#id_nombre').alpha({allow:" "}); //Solo permite texto
+    $('#id_apellido').alpha({allow:" "}); //Solo permite texto"
+    
+    $('#registrar').click(function(e) {
+	e.preventDefault();
+	
+	var sexo    = $('#id_sexo').find('option').filter(':selected').val()
+	var partido = $('#id_partido').find('option').filter(':selected').val()
+	
+	
+	if (!$("#id_foto").val().match(/(?:gif|jpg|png|bmp|jpeg)$/)) { // inputted file path is not an image of one of the above types
+	    bootbox.alert("Debe Seleccionar la Foto del Candidato ", function() {
+	    $('#id_foto').parent('div').addClass('has-error'); // colocar class has-error de boostrap
+	    $('#id_foto').focus();  
+            });
+       	}
+	else if (($('#id_cedula').val() == '')) {
+	    bootbox.alert("Debe indicar la Cédula del Candidato", function() {
+            $('#id_cedula').parent('div').addClass('has-error'); // colocar class has-error de boostrap
+	    $('#id_cedula').focus();   
+            });
+	}
+	else if (($('#id_nombre').val() == '')) {
+	    bootbox.alert("Debe indicar el Nombre del Candidato", function() {
+	    $('#id_nombre').parent('div').addClass('has-error'); // colocar class has-error de boostrap
+	    $('#id_nombre').focus()
+            });
+	   
+	}
+	else if (($('#id_apellido').val() == '')) {
+	    bootbox.alert("Debe indicar el Apellido del Candidato", function() {
+            $('#id_apellido').parent('div').addClass('has-error'); // colocar class has-error de boostrap
+	    $('#id_apellido').focus()  
+            });
+	    
+	}
+	else if (($('#id_edad').val() == '')) {
+	    bootbox.alert("Debe indicar la Edad del Candidato", function() {
+            $('#id_edad').parent('div').addClass('has-error'); // colocar class has-error de boostrap
+	    $('#id_edad').focus()    
+            });
+	    
+	}
+	else if ($('#id_edad').val() < 18) {
+	    bootbox.alert("El candidato es menor de edad", function() {
+            $('#id_edad').parent('div').addClass('has-error'); // colocar class has-error de boostrap
+	    $('#id_edad').focus()    
+            });
+	   
+	}
+	else if (sexo == 0) { 
+	    bootbox.alert("Debe indicar el Sexo", function() {
+            $('#id_sexo').parent('div').addClass('has-error'); // colocar class has-error de boostrap
+	    $('#id_sexo').focus()    
+            });
+	    
+	}
+	else if (partido == 0) { 
+	    bootbox.alert("Debe indicar el Partido", function() {
+             $('#id_partido').parent('div').addClass('has-error'); // colocar class has-error de boostrap
+	    $('#id_partido').focus()    
+            });
+	    
+	}
+	else{
+	    
+	    $.post('',$('#form_candi').serialize(),function(response){
+		if (response == 'existe') {
+		    bootbox.alert("Esta Cedula ya esta registrada", function() {
+		    $('#id_cedula').parent('div').addClass('has-error'); // colocar class has-error de boostrap
+		    $('#id_cedula').focus()
+		    });
+		    
+		}else{
+		   $('#form_candi').submit(); 
+		}
+	    });
+	}
+    });
+    
+    $("#id_foto").fileinput({showCaption: false,showUpload: false, removeLabel: "Eliminar",});
+    
+    $('#volver').click(function(){
+        url = '/candidatos/'
+        window.location = url
+    })
+    $('#limpiar').click(function(){
+        $('#id_partido').select2('val', '0');
+    })
+});
+
+</script>
+{% load templatag_grupos %}
+{% ifusergroup Registro %}
+<body>
+    <form method="post" id="form_candi" enctype="multipart/form-data">
+	{% csrf_token %}
+	<br/>
+
+	<div style="width: 80%;" class="panel panel-primary">
+	    <div class="panel-heading">
+	      <h3 class="panel-title">Registrar Candidatos</h3>
+	    </div>
+	    	<br/>
+		<fieldset><legend class="titulo">Datos Personales del Candidato</legend></fieldset>
+
+	    <br/>
+	    <div class="form-inline" >
+		<div class="col-xs-3">&nbsp;</div>
+		
+		<div class="form-group col-xs-1" style="text-align: left;font-weight: bold;font-size: 13px">
+		    <label>Foto: </label>
+		</div>
+		<div class="form-group col-xs-8">
+			<div class="help-block file-error-message" id="errorBlock" style="display: none;">Error de Archivo. Sólo son soportados archivos ".png, .jpg".</div>
+		    <label class="cargar">
+			<input  class="form-control" id="id_foto" type="file"  name='foto' class="fotos" multiple="true">
+			
+		    </label>
+		</div>
+		
+	    <br/>
+	    <br/>
+	    <br/>
+	    <br/>
+	    <br/>
+	    <br/>
+	    <br/>
+	    <br/>
+	    <br/>
+	    <br/>
+	    <br/>
+		<br/>
+	    <br/>
+	    <br/>
+	    <br/>
+	    <br/>
+	   
+	    
+	     <div class="form-inline" >
+		
+		<div class="col-xs-1">Cédula:</div>
+		<div class="col-xs-5">
+		    <label class="fom_ley"></label><input id="id_cedula" style="width: 100%; placeholder="Cédula del Candidato" maxlength="8" name="cedula" type="text" />
+		</div>
+		
+		<div class="form-group col-xs-1">Nombre:</div>
+		<div class="form-group col-xs-5">
+		    <label class="fom_ley"></label><input id="id_nombre" maxlength="40"  style="width: 100%; placeholder="Nombre Completo" name="nombre" type="text" />
+		</div>
+	    </div>
+	    <br/>
+	    <br/>
+	    <br/>
+	   
+	    
+	    <div class="form-inline">
+		
+		<div class="form-group col-xs-1">
+		    <label>Apellido: </label>
+		</div>
+		<div class="form-group col-xs-5">
+		    <input id="id_apellido" style="width: 100%;bold;font-size: 13px" maxlength="40" placeholder="Apellido Completo" name="apellido" type="text" />
+		</div>
+		<div class="form-group col-xs-1">
+		    <label>Edad: </label>
+		</div>
+		<div class="form-group col-xs-5">
+		    <input id="id_edad" name="edad" style="width: 100%;bold;font-size: 13px" placeholder="Edad"  maxlength="2" min="18" type="text" />
+		</div>
+	    
+	    </div>
+	    <br/>
+	    <br/>
+	    <br/>
+	    <div class="form-inline" >
+		
+		<div class="form-group col-xs-1">
+		    <label>Sexo: </label>
+		</div>
+		<div class="form-group col-xs-5">
+		    <select style="width: 100%;font-weight:bold;font-size: 13px" id="id_sexo" name="sexo">
+			<option value='0'>Seleccione</option>
+			<option value='1'>Femenino</option>
+			<option value='2'>Masculino</option>
+		    </select>
+		</div>
+		<div class="form-group col-xs-1">
+		    <label>Partido: </label>
+		</div>
+		<div class="form-group col-xs-5">
+		    <select id="id_partido" name="part_politico" class="form-control select2 input-sm " style="width: 100%;font-weight:bold;font-size: 13px" >
+			<option value="0">Seleccione</option>
+			{% for p in list_partidos %}
+			    <option value='{{p.id}}'>{{ p.n_partidos }}</option>
+			{% endfor %}
+		    </select>
+		</div>
+	    </div>
+	    <br/>
+	    <br/>
+	    <br/>
+	    <div class="form-inline">
+		
+		<div class="form-group col-xs-1">
+		    <label>Twiter: </label>
+		</div>
+		<div class="form-group col-xs-5">
+		    <input style="width: 100%;font-weight:bold;font-size: 13px" id="id_twitter" placeholder="@twitter" maxlength="40" name="twitter" type="text"/>
+		</div>
+		<div class="form-group col-xs-6" style="text-align: left;font-weight: bold;font-size: 13px">
+		    <label>Activo:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
+		    <input type="checkbox" id="candidato_activo" name="candidato_activo" />
+		    <label>&nbsp;&nbsp;&nbsp; **¿Candidato Activo en el CNE?</label>
+		</div>
+	    </div>
+	    <br/>
+	    <br/>
+	    <br/>
+
+	
+
+	    <input id='user_create' type="hidden" name='user_create' value='{{ user.id }}'>
+	    <br/>
+	    <br/>
+	    <br/>
+	    <div class="row" style="text-align: center">
+		<button type="button" id="volver" style="font-weight: bold;font-size: 13px" class="btn btn-warning " >
+		    &nbsp;<span class="glyphicon glyphicon-chevron-left"></span>&nbsp;Volver
+		</button>
+		<button type="submit" id="registrar" style="font-weight: bold;font-size: 13px" class="btn btn-info"/>
+		    &nbsp;<span class="glyphicon glyphicon-floppy-disk"></span>&nbsp;Registrar
+		</button>
+		<button type="reset" id="limpiar" style="font-weight: bold;font-size: 13px" class="btn btn-success"/>
+		    &nbsp;<span class="glyphicon glyphicon-retweet"></span>&nbsp;&nbsp;Limpiar
+		</button>
+	    </div>
+	    <br/>
+	</div>
+    </form>
+</body>
+{% else %}
+<p style="color: #FF0000; font-size: 18px">Disculpe No esta autorizado para esa área.</p>
+{% endifusergroup %}
+</html>
+{% endblock %}

@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% block contenido %}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta charset="utf-8"/>
+
+        
+    <title>{% block titulo %} Exit Poll {% endblock %}</title>
+       
+
+</head>
+<script>
+$(document).ready(function(){
+    var TUbch = $('#tab_consulta').dataTable({
+        "iDisplayLength": 25,
+        "iDisplayStart": 0,
+        "sPaginationType": "full_numbers",
+        "aLengthMenu": [25, 50, 75, 100],
+        "oLanguage": {"sUrl": "/static/js/es.txt"},
+        "aoColumns": [
+            
+            {"sClass": "registro center", "sWidth": "25%"},
+            {"sClass": "registro center", "sWidth": "20%"},
+            {"sClass": "registro center", "sWidth": "15%"},
+            
+        ]
+    });
+   $('#volver').click(function(){
+	    url = '/consulta/'
+	    window.location = url
+	    })
+   
+
+
+}); 
+    
+  
+</script>
+<body>
+    <fieldset><legend class="titulo">Consulta de Votos a:     {{ listar_elecciones }}</legend></fieldset>
+
+<div style="width:75%">
+   
+    <table style="width:100%;" border="0" align="center" cellspacing="1" id="tab_partidos" align="center"
+           class="table table-bordered table-striped table-hover table-condensed dt-responsive table-responsive">
+        <thead style="font-size: 13px">
+            <tr class="info">
+                <th style='text-align: center' colspan="3">Cantidad de Votos por Candidato</th>
+            </tr>
+            <tr class="info">
+                <th style="text-align: center;width:10%;">Candidatos</th>
+                <th style="text-align: center;width:80%;">Nombre y Apellido</th>
+                <th style="text-align: center;width:10%">Total de Votos</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for m in queryset %}
+            <tr style="font-size: 13px" class="{% cycle 'impar' 'par' %}">
+                    <td align="center">
+                        <img class="img-rounded" height="60" width="80" src="{{MEDIA_URL}}{{m.candidatos__foto}}"  
+                    </td>
+                    <td align="left">
+                        {{m.candidatos__nombre}} {{m.candidatos__apellido}}   
+                    </td>
+                   <td align="center">
+                        {{m.total}}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td style="color: red; font-size: 14px;text-align: center" colspan="3">
+                        **Disculpe, el proceso de votacion no ha comenzado para esta elección.
+                    </td>
+                </tr>
+            {% endfor %}
+            
+              
+        </tbody>
+        
+    </table>
+    
+    <button type="button" id="volver" style="font-weight: bold;font-size: 13px" class="btn btn-warning " >
+		<span class="glyphicon glyphicon-chevron-left"></span>&nbsp;Volver
+	</button>
+    
+    
+</div>
+</body>
+</html>
+
+{% endblock %}
+
+
+

@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+        <title>{% block titulo %} Exit Poll {% endblock %}</title>
+        <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}css/bootstrap.css">
+        <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}css/bootstrap.theme.css">
+       
+        
+        <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}css/select2.css"/>
+        <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}css/select2-bootstrap.css"/>
+        <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}css/dataTables.bootstrap.css"/>
+        <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}css/dataTables.responsive.css"/>
+	<link rel="stylesheet" type="text/css" href="{{STATIC_URL}}css/jquery.fancybox.css"/>
+        <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}css/bootstrap-datepicker.css" />
+        
+        <script src="{{ STATIC_URL }}js/jquery-1.11.2.min.js"></script>
+        <script src="{{ STATIC_URL }}js/bootstrap.min.js"></script>
+        <script src="{{ STATIC_URL }}js/jquery.dataTables.js"></script>
+	
+
+	
+	
+        <script src="{{ STATIC_URL }}js/validaciones.js"></script>
+        <script src="{{ STATIC_URL }}js/jquery.alphanumeric.js"></script>
+	<script src="{{ STATIC_URL }}js/jquery.fancybox.js"></script>
+        <script src="{{ STATIC_URL }}js/fileinput.min.js"></script>
+        <script src="{{ STATIC_URL }}js/bootbox.js"></script>
+	
+	
+        
+        <script src="{{STATIC_URL}}js/bootstrap-datepicker.js"></script>
+        <script src="{{STATIC_URL}}js/bootstrap-datepicker.es.min.js"></script>
+        
+        <script src="{{ STATIC_URL }}js/select2.js"></script>
+        <script src="{{ STATIC_URL }}js/select2_locale_es.js"></script>
+        <script src="{{ STATIC_URL }}js/bootstrap-select.js"></script>
+        <script src="{{ STATIC_URL }}js/dataTables.bootstrap.js"></script>
+        <script src="{{ STATIC_URL }}js/dataTables.responsive.min.js"></script>
+        <script src="{{ STATIC_URL }}js/highcharts.js"></script>
+        <script src="{{ STATIC_URL }}js/footerfijo.js"></script>
+	
+	{% block scriptgrouping %}{% endblock %}
+	
+	
+        <style type="text/css">
+	     
+           	     
+            body{
+                font-size: 13px !important;
+		font-family: Arial !important;
+		font-family: Arial !important;
+		color: #515050;
+		margin: 0 auto;
+		padding: 0;
+            }
+	    
+	    body div{
+                font-size: 13px !important;
+		font-weight: bold !important ;
+		font-family: Arial !important;
+            }
+            
+            .tit-elim{
+		font-size: 16px;
+		font-weight: bold;
+		font-family: Arial !important;
+		color: #044A8E;
+		margin: 0 auto;
+		padding: 0;
+		text-align: center;
+            }
+	    
+	    .titulo{
+		font-size: 13px;
+		font-weight: bold;
+		font-family: Arial !important;
+		color: #044A8E;
+		margin: 0 auto;
+		padding: 0;
+		text-align: center;
+            }
+	    div >label{
+		font-size: 13px;
+		font-weight: bold;
+		font-family: Arial !important;
+		color: #515050;
+		margin: 0 auto;
+		padding: 0;
+		text-align: left;
+            }
+	    
+	    .form-inline{
+		font-size: 13px;
+		font-weight: bold;
+		font-family: Arial !important;
+		color: #515050;
+		margin: 20px 1px;
+		padding: 0;
+		text-align: left;
+            }
+	    
+	    .panel-title{
+		font-size: 13px !important;
+		font-weight: bold !important ;
+		font-family: Arial !important;
+		text-align: left !important;
+            }
+	    
+	    .panel-title{
+		font-size: 13px !important;
+		text-align: justify !important;
+		font-weight: bold !important ;
+		font-family: Arial !important;
+		text-align: left !important;
+            }
+	    
+	    li{
+		font-size: 13px !important;
+		text-align: justify !important;
+		font-weight: bold !important ;
+		font-family: Arial !important;
+            }
+	    
+	    .subtitulo{
+		font-size: 13px !important;
+		text-align: justify !important;
+		font-weight: bold !important ;
+		font-family: Arial !important;
+		color: #000 !important;
+            }
+	    th{
+                
+                font-size: 13px; 
+                /*font-family: sans-serif;*/
+                font-weight: bold;
+		font-family: Arial !important;
+		color: #515050;
+		
+            }
+	    td{
+                
+                font-size: 13px;
+		font-family: Arial !important;
+               /* font-family: sans-serif;*/
+                font-weight: normal;
+		color: #515050;
+		
+            }
+	    
+           
+            .rightMenu {
+                position:relative;
+                float:right;
+            }
+            .right-caret {
+                border-bottom: 4px solid transparent;
+                border-top: 4px solid transparent;
+                border-left: 4px solid #000000;
+                display: inline-block;
+                height: 0;
+                opacity: 1;
+                vertical-align: top;
+                width: 0;
+            }
+            .right
+            {
+                float:right;
+            }
+        </style>
+        
+        <!-- Piwik -->
+<script type="text/javascript">
+  var _paq = _paq || [];
+  _paq.push(['trackPageView']);
+  _paq.push(['enableLinkTracking']);
+  (function() {
+    var u="//estadistica.bva.org.ve/";
+    _paq.push(['setTrackerUrl', u+'piwik.php']);
+    _paq.push(['setSiteId', 10]);
+    var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+    g.type='text/javascript'; g.async=true; g.defer=true; g.src=u+'piwik.js'; s.parentNode.insertBefore(g,s);
+  })();
+</script>
+<noscript><p><img src="//estadistica.bva.org.ve/piwik.php?idsite=10" style="border:0;" alt="" /></p></noscript>
+<!-- End Piwik Code -->
+    </head>
+    
+    <body>
+		{% load templatag_grupos %}
+        <header>
+            <div>
+            <center>
+                
+            <nav class="navbar navbar-inverse" style="width: 100%; font-size: 13px">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                      <span class="sr-only">Toggle navigation</span>
+                      <span class="icon-bar"></span>
+                      <span class="icon-bar"></span>
+                      <span class="icon-bar"></span>
+                    </button>
+                </div>
+                    <div id="navbar" aria-expanded="true" class="navbar-collapse collapse in" style="font-weight: bold">
+                        <ul class="nav navbar-nav" >
+                            <li><a href='/menu/' >Inicio</a></li>
+							{% ifusergroup Registro %}
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Registrar <span class="caret"></span></a>
+                                <ul class="dropdown-menu" role="menu">
+                                    <li><a href='/encuestas'>Encuestas</a></li>
+									
+                                </ul>
+                            </li>
+                            {% endifusergroup %}
+                            {%  ifusergroup Consulta %}
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Reportes <span class="caret"></span></a>
+                                <ul class="dropdown-menu" role="menu">
+                                    <li><a href='/reportes/encuestas/'>Reportes Detallados</a></li>
+                                </ul>
+                            </li>
+                            {% endifusergroup %}
+                        </ul>
+                        <ul class="nav navbar-nav navbar-right">
+                            
+                            <li><a  href="{% url 'logout_view' %}">Cerrar sesión: {{ user }} </a></li>
+                        </ul>
+                    </div>
+            </nav>
+            </center>
+            </div>
+        </header>
+        <center>
+            <div>
+                {% block contenido %}{% endblock %}
+            </div>
+        </center>
+	
+         <div id="footer" style="text-align:center;">
+            <img src="{{ STATIC_URL }}img/footer.png"/>
+        </div>
+    </body>
+
+</html>

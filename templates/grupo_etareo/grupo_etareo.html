@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+{% extends 'base.html' %}
+
+{% block contenido %}
+<html>
+<head>
+    <title>Registrar Grupo Etareo</title>
+</head>
+<script type="text/javascript">
+$(document).ready(function(){
+    $('#descripcion').alpha({allow:" "}); //Valida solo valores tipo texto en descripción
+    $('#grupo_etareo').numeric({allow:"+-"}); //Solo permite numeros y estos caractes en el rago del grupo
+    $('#registrar').click(function(e){ //Valida al guardar que el rago no sea menor 3 caracteres
+        e.preventDefault();
+	var desde = $('#desde').val()
+	var hasta = $('#hasta').val()
+	$('input').on({
+	    keypress: function() {
+		$(this).parent('div').removeClass('has-error');
+	    }
+	});	
+	
+	if (($('#descripcion').val() == '')) {
+	    bootbox.alert('Disculpe, Debe Colocar la Descripción', function() {	    
+		$('#descripcion').parent('div').addClass('has-error');
+	    }); 
+	}
+	else if ($('#descripcion').val().length < 4) {
+	    bootbox.alert('Disculpe, Descripción invalida (muy corta)', function() {	    
+		$('#descripcion').parent('div').addClass('has-error');
+	    }); 
+	}
+	else if($('#descripcion').val() == null || $('#descripcion').val().length == 0 || /^\s+$/.test($('#descripcion').val())) {
+            bootbox.alert('Disculpe, no esta registrando nada', function() {	    
+		$('#descripcion').parent('div').addClass('has-error');
+	    });
+    }
+	else if (desde.trim() == '') {
+		bootbox.alert('Disculpe, debe indicar desde que edad quiere para este Grupo Etáreo', function() {	    
+			$('#desde').parent('div').addClass('has-error'); // colocar class has-error de boostrap
+			$('#desde').focus()
+		});
+	}
+	else if (desde < 18) {
+		bootbox.alert('Disculpe, Edad Invalida no puede ser menor a 18 años', function() {	    
+			$('#desde').parent('div').addClass('has-error'); // colocar class has-error de boostrap
+			$('#desde').focus()
+		});
+	}else if (hasta.trim() == '') {
+		bootbox.alert('Disculpe, debe indicar hasta que edad es este Grupo Etáreo', function() {	    
+			$('#hasta').parent('div').addClass('has-error'); // colocar class has-error de boostrap
+			$('#hasta').focus()
+		});
+	}
+	else if (hasta < desde) {
+		bootbox.alert('Disculpe, el hasta no puede ser menor al desde en el rango de edades.', function() {	    
+			$('#hasta').parent('div').addClass('has-error'); // colocar class has-error de boostrap
+			$('#hasta').focus()
+		});
+	}
+	else {
+        $.post('',$('#form_grupo').serialize()+'&bandera=true',function(response){
+			if (response == 'existe_t') {
+				bootbox.alert('Disculpe, Esta Descripción y Rango de Edades ya estan Registrados', function() {	    
+				$('#descripcion,#desde,#hasta').parent('div').addClass('has-error');
+				}); 
+			}
+			else if (response == 'existe_d') {
+				bootbox.alert('Disculpe, Esta Descripción ya está Registrada', function() {	    
+				$('#descripcion').parent('div').addClass('has-error');
+				}); 
+			}
+			else if (response == 'existe_g') {
+				bootbox.alert('Disculpe, Este Rango de Edades ya está Registrado', function() {	    
+				$('#desde,#hasta').parent('div').addClass('has-error');
+				}); 
+			}else{
+				$('#form_grupo').submit(); 
+			}
+	    });
+        }
+    });
+    $('#volver').click(function(){
+        url = '/configuraciones/grupo_etareo'
+        window.location = url
+    })
+});
+</script>
+<body>
+    {% load templatag_grupos %}
+    {% ifusergroup Configuraciones %}
+    <br/>
+    <br/>
+
+    <form id="form_grupo" method="post">
+	{% csrf_token %}
+	
+	<br/>
+	<br/>
+	<div style="width: 80%;" class="panel panel-primary">
+            <div class="panel-heading">
+              <label class="panel-title">Registrar Grupo Etáreo</label>
+            </div>
+            <br/>
+	    <fieldset><legend class="titulo">Datos del Grupo Etáreo</legend></fieldset>
+	    <br/>
+	    <div class="form-inline">
+			<div class="form-group col-xs-6">
+				<label>Descripción:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
+				<input type='text' maxlength="30" placeholder="Nombre del Grupo" style="width: 70%;font-size: 13px" id="descripcion" name="descripcion"/>
+			</div>
+			<div class="form-group col-xs-3">
+				<label>Desde:&nbsp;&nbsp; </label>
+                <input id="desde" name="desde" style="width: 25%;bold;font-size: 13px" maxlength="2" type="text" />
+            </div>
+            <div class="form-group col-xs-3">
+				<label>Hasta:&nbsp;&nbsp; </label>
+                <input id="hasta" name="hasta" style="width: 25%;bold;font-size: 13px" maxlength="2" type="text" />
+            </div>  
+	    </div>
+	    <br/>
+	    <br/>
+	    <br/>
+	    
+	    <input id='user_create' type="hidden" name='user_create' value='{{ user.id }}'>
+	    
+		<div class="row" style="text-align: center">
+			<button type="button" id="volver" style="font-weight: bold;font-size: 13px" class="btn btn-warning " >
+				&nbsp;<span class="glyphicon glyphicon-chevron-left"></span>&nbsp;Volver
+			</button>
+			<button type="submit" id="registrar" style="font-weight: bold;font-size: 13px" class="btn btn-info"/>
+				&nbsp;<span class="glyphicon glyphicon-floppy-disk"></span>&nbsp;Registrar
+			</button>
+			<button type="reset" id="limpiar" style="font-weight: bold;font-size: 13px" class="btn btn-success"/>
+				&nbsp;<span class="glyphicon glyphicon-retweet"></span>&nbsp;&nbsp;Limpiar
+			</button>
+	    </div>
+            <br/>
+        </div>
+	
+    </form>
+    {% else %}
+    <p style="color: #FF0000; font-size: 18px">Disculpe No esta autorizado para esa área.</p>
+    {% endifusergroup %}
+</body>
+</html>
+{% endblock %}

@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+{% block contenido %}
+{% load templatag_grupos %}
+{% ifusergroup Registro %}
+<script>
+$(document).ready(function(){
+    var TUbch = $('#tab_partidos').dataTable({
+        "iDisplayLength": 25,
+        "iDisplayStart": 0,
+        "sPaginationType": "full_numbers",
+        "aLengthMenu": [25, 50, 75, 100],
+        "oLanguage": {"sUrl": "/static/js/es.txt"},
+        "aoColumns": [
+            {"sClass": "registro center", "sWidth": "3%"},
+            {"sWidth": "3%", "bSortable": false, "sClass": "center sorting_false", "bSearchable": false},
+            {"sClass": "registro center", "sWidth": "7%"},
+            {"sClass": "registro center", "sWidth": "25%"},
+            {"sClass": "registro center", "sWidth": "20%"},
+            {"sClass": "registro center", "sWidth": "15%"},
+            {"sWidth": "3%", "bSortable": false, "sClass": "center sorting_false", "bSearchable": false},
+            {"sWidth": "3%", "bSortable": false, "sClass": "center sorting_false", "bSearchable": false},
+        ]
+    });
+    $('#enviar').click(function(){
+        url = '/partidos/registrarpartido/'
+        window.location = url
+    })
+    
+    $(".fancybox").fancybox({
+        
+            maxWidth: 600,
+            maxHeight: 600,
+            fitToView: false,
+    });
+
+});
+</script>
+<div style="width:75%">
+    <button role="button" class="btn btn-primary" style="font-weight:bold;font-size: 13px" id="enviar" >
+        &nbsp;<span class="glyphicon glyphicon-plus"></span>&nbsp;Agregar Partido
+    </button>
+    
+    <br/>
+    <br/>
+    
+	
+    <table style="width:100%;" border="0" align="center" cellspacing="1" id="tab_partidos" align="center"
+           class="table table-bordered table-striped table-hover table-condensed dt-responsive table-responsive">
+        <thead style="font-size: 13px">
+            <tr class="info">
+                <th style='text-align: center' colspan="8">Partidos Políticos Registrados</th>
+            </tr>
+            <tr class="info">
+                <th style='text-align: center'>Ítem</th>
+                <th style='text-align: center'>Logo</th>
+                <th style='text-align: center'>Siglas</th>
+                <th style='text-align: center'>Nombre</th>
+                <th style='text-align: center'>Correo</th>
+                <th style='text-align: center'>Teléfono</th>
+                <th style='text-align: center'>Editar</th>
+                <th style='text-align: center'>Borrar</th>
+            </tr>
+        </thead>
+        <tbody>
+                {% for m in listar_partido %}
+                <tr style="font-size: 13px;text-align: center" class="{% cycle 'impar' 'par' %}">
+                    <td>
+                        {{ forloop.counter }}
+                    </td>
+                    <td>
+                        <a class="fancybox" rel="/imagenes/logo_partidos/" href="{{MEDIA_URL}}{{m.foto_partido}}" title=" {{m.n_partidos}}">
+                            <img style="width:70px;height: 70px" src="{{MEDIA_URL}}{{m.foto_partido}}" alt="" />
+                        </a>
+                       <!-- <img  height="60" width="80" src="{{MEDIA_URL}}{{m.foto_partido}}">-->
+                    </td>
+                    <td>
+                        {{m.siglas}}
+                    </td>
+                    <td>
+                        {{m.n_partidos}}
+                    </td>
+                    <td>
+                        {{m.correo}}
+                    </td>
+                    <td>
+                        {{m.telefono}}
+                    </td>
+                    <td style='text-align: center'>
+                        <a href="{% url "editar_partido" m.id %}"><img style="width:25px;height: 25px" src="{{ STATIC_URL }}img/edit.png"/></a>
+                    </td>
+                    <td style='text-align: center'>
+                        <a href="{% url "borrar_partido" m.id %}"><img style="width:25px;height: 25px" src="{{ STATIC_URL }}img/borrar.png"/></a>
+                    </td>
+                </tr>
+                {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<p style="color: #FF0000; font-size: 18px">Disculpe No esta autorizado para esa área.</p>
+{% endifusergroup %}
+{% endblock %}

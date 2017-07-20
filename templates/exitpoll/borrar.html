@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block contenido %}
+
+<html>
+<head>
+    <title>Eliminar Exit Poll</title>
+</head>
+
+{% load templatag_grupos %}
+{% ifusergroup Registro %}
+<script>
+$(document).ready(function() {
+    $('#volver,#eliminar').click(function(){
+        url = '/exitpoll/'
+        window.location = url
+    })
+});
+</script>
+
+<body>
+    <form method="post">{% csrf_token %}
+    <br/>
+    <br/>
+    <label class="tit-elim">Eliminar Exit Poll</label>
+   	
+	<h4>¿Está seguro que quiere desvincular este candidato "{{borrar_exitpoll.candidatos}}" de esta Exit Poll "{{borrar_exitpoll.eleccion}}"  ?</h4>
+	
+	<button style="font-weight: bold;font-size: 13px" type="button" id="volver" class="btn btn-warning"/>
+	    <span class="glyphicon glyphicon-chevron-left"></span>&nbsp;Volver
+	</button>
+	<button style="font-weight: bold;font-size: 13px" type="submit" id="eliminar" class="btn btn-danger "/>
+	    <span class="glyphicon glyphicon-remove"></span>&nbsp;Eliminar
+	</button>
+	
+	
+    </form>
+</body>
+{% else %}
+<p style="color: #FF0000; font-size: 18px">Disculpe No esta autorizado para esa área.</p>
+{% endifusergroup %}
+</html>
+{% endblock %}

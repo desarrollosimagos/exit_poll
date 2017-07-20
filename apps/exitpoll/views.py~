@@ -1,0 +1,88 @@
+from django.views.generic import CreateView, ListView, UpdateView, DeleteView
+from django.core.urlresolvers import reverse_lazy
+from .models import ExitPoll
+
+
+class RegistrarExitPoll(CreateView):
+    """ Vista basada en clase: (`Registrar`)
+
+    :param template_name: ruta de la plantilla
+    :param model: Modelo al cual se hace referencia
+    :param success_url: nombre de la ruta a la cual se redireccionara la aplicacion una vez culminado el registro
+        satisfactoriamente.
+    """
+    template_name = 'exitpoll/exitpoll.html'
+    model = ExitPoll
+    success_url = reverse_lazy("listar_exitpoll")
+
+
+class ListarExitPoll(ListView):
+    """ Vista basada en clase: (`Listar`)
+
+    :param template_name: ruta de la plantilla
+    :param model: Modelo al cual se hace referencia
+    :param context_object_name: nombre del objeto que contiene esta vista
+    :param paginate_by: Genera la paginacion de los registros en base a la cantidad definida.
+    """
+    model = ExitPoll
+    template_name = 'exitpoll/listar.html'
+    context_object_name = "listar_exitpoll"
+    paginate_by = 10
+
+
+class EditarExitPoll(UpdateView):
+    """ Vista basada en clase: (`Editar`)
+
+    :param template_name: ruta de la plantilla
+    :param model: Modelo al cual se hace referencia
+    :param success_url: nombre de la ruta a la cual se redireccionara la aplicacion una vez culminada la edicion del
+        registro satisfactoriamente.
+    :param context_object_name: nombre del objeto que contiene esta vista
+    """
+    model = ExitPoll
+    template_name = 'exitpoll/modificar.html'
+    context_object_name = "editar_exitpoll"
+    success_url = reverse_lazy("listar_exitpoll")
+
+
+class BorrarExitPoll(DeleteView):
+    """ Vista basada en clase: (`Borrar`)
+
+    :param template_name: ruta de la plantilla
+    :param model: Modelo al cual se hace referencia
+    :param success_url: nombre de la ruta a la cual se redireccionara la aplicacion una vez eliminado el registro
+         satisfactoriamente.
+    :param context_object_name: nombre del objeto que contiene esta vista
+    """
+    model = ExitPoll
+    template_name = 'exitpoll/borrar.html'
+    context_object_name = "borrar_exitpoll"
+    success_url = reverse_lazy("listar_exitpoll")
+
+
+class Candidatos(ListView):
+    """ Vista basada en clase: (`Listar`)
+
+    :param template_name: ruta de la plantilla
+    :param model: Modelo al cual se hace referencia
+    :param context_object_name: nombre del objeto que contiene esta vista
+    :param paginate_by: Genera la paginacion de los registros en base a la cantidad definida.
+    """
+    model = ExitPoll
+    template_name = 'exitpoll/candidatos.html'
+    context_object_name = "listar_exitpoll"
+    paginate_by = 10
+
+
+class MenuMovil(ListView):
+    """ Vista basada en clase: (`Listar`)
+
+    :param template_name: ruta de la plantilla
+    :param model: Modelo al cual se hace referencia
+    :param context_object_name: nombre del objeto que contiene esta vista
+    :param paginate_by: Genera la paginacion de los registros en base a la cantidad definida.
+    """
+    model = ExitPoll
+    template_name = 'exitpoll/menumovil.html'
+    context_object_name = "listar_exitpoll"
+    paginate_by = 10

@@ -1,0 +1,444 @@
+{% extends 'base.html' %}
+{% block contenido %}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <title>Total de Votos</title>
+</head>
+<script src="{{ STATIC_URL }}js/exporting.js"></script>
+<script src="{{ STATIC_URL }}js/drilldown.js"></script>
+<script type="text/javascript">
+    var chart;
+
+    $(document).ready(function(){
+		$('#id_tipo').change(function() {
+			var tipo = $(this).val();
+			if (tipo == 1) { //TODO
+				$('#id_cod_estado').select2('val', '0');
+				$('#id_cod_municipio,#id_circuito').find('option:gt(0)').remove().end().select2('val', '0');
+				$('#id_cod_estado,#id_circuito,#id_cod_municipio').prop('disabled',true)
+			}else if (tipo == 2) { //Por Estado
+				$('#id_cod_estado').select2('val', '0');
+				$('#id_cod_municipio,#id_circuito').prop('disabled',true)
+				$('#id_cod_estado').prop('disabled',false)
+				$('#id_cod_municipio,#id_circuito').find('option:gt(0)').remove().end().select2('val', '0');
+			}else if (tipo == 3) { //Por Circuito
+				$('#id_cod_municipio').prop('disabled',true)
+				$('#id_cod_estado,#id_circuito').prop('disabled',false)
+				$('#id_cod_estado').select2('val', '0');
+				$('#id_cod_municipio,#id_circuito').find('option:gt(0)').remove().end().select2('val', '0');
+			}else{ //Por Municipio
+				$('#id_cod_estado').select2('val', '0');
+				$('#id_cod_municipio,#id_circuito').find('option:gt(0)').remove().end().select2('val', '0');
+				$('#id_cod_estado,#id_cod_municipio').prop('disabled',false)
+				$('#id_circuito').prop('disabled',true)
+				
+			}
+		});
+        $('#exportar_grupo').click(function(){
+            var eleccion = $('#id_eleccion').find('option').filter(':selected').val()
+			var candidato = $('#id_candidato').find('option').filter(':selected').val()
+			var tipo = $('#id_tipo').find('option').filter(':selected').val()
+			var estado = $('#id_cod_estado').find('option').filter(':selected').val()
+			var municipio = $('#id_cod_municipio').find('option').filter(':selected').val()
+			var circuito = $('#id_circuito').find('option').filter(':selected').val()
+
+			if (eleccion == 0) {
+				bootbox.alert('Debe Seleccionar la Elección', function() {	    
+					$('#id_eleccion').select2('open');
+				});
+            }
+			else if (candidato == 0) {
+				bootbox.alert('Debe Seleccionar el Candidato', function() {	    
+					$('#id_candidato').select2('open');
+				});
+            }else if (tipo == 0) {
+                bootbox.alert('Debe Seleccionar tipo de reporte para poder exportar el PDF', function() {	    
+					$('#id_tipo').select2('open');
+				});
+            }else{
+                url = 'candidatogrupo/?tipo='+tipo+'&eleccion='+eleccion+'&candidato='+candidato
+				if (tipo == 1) {
+					url = url
+				}else if (tipo == 2){
+					url += '&estado='+estado
+				}else if (tipo == 3){
+					url += '&circuito='+circuito
+				}else{
+					url += '&municipio='+municipio
+				}
+                window.open(url); 
+            }
+        });
+	$('#id_eleccion').change(function() {
+	    $('#id_candidato').select2('val', '0');
+        
+	});
+        var chart; 
+        $("#id_eleccion,#id_candidato,#id_tipo,#id_cod_estado,#id_cod_municipio,#id_circuito").select2();
+        $('#grupo,#sexo').click(function(){
+            var id_eleccion = $('#id_eleccion').find('option').filter(':selected').val()
+			var id_candidato = $('#id_candidato').find('option').filter(':selected').val()
+            var titulo = ($('#id_eleccion').find('option').filter(':selected').text())
+			var nom_est = ($('#id_cod_estado').find('option').filter(':selected').text())
+			var nom_mun = ($('#id_cod_municipio').find('option').filter(':selected').text())
+			var nom_cir = ($('#id_circuito').find('option').filter(':selected').text())
+			var nom_candidato = ($('#id_candidato').find('option').filter(':selected').text())
+			var tipo = $('#id_tipo').find('option').filter(':selected').val()
+			var estado = $('#id_cod_estado').find('option').filter(':selected').val()
+			var municipio = $('#id_cod_municipio').find('option').filter(':selected').val()
+			var circuito = $('#id_circuito').find('option').filter(':selected').val()
+            var id = $(this).attr('id');
+            var bandera = 'sexo';
+            if (id == 'grupo') {
+                bandera = 'grupo';
+            }
+            else {
+                //$("#cab_candidatos").prop('hidden',true)
+            }
+			
+            if (id_eleccion == 0) {
+                bootbox.alert('Debe Seleccionar la Elección', function() {	    
+					$('#id_eleccion').select2('open');
+				});
+            }
+			else if (id_candidato == 0) {
+                bootbox.alert('Debe Seleccionar el Candidato', function() {	    
+					$('#id_candidato').select2('open');
+				});
+            }else if (tipo == 0) {
+                bootbox.alert('Debe Seleccionar tipo de reporte para poder exportar el PDF', function() {	    
+					$('#id_tipo').select2('open');
+				});
+            }
+			else if (tipo == 2 && estado == 0 ) {
+				bootbox.alert('Debe Seleccionar el Estado', function() {	    
+					$('#id_cod_estado').select2('open');
+				});
+			}
+			else if (tipo == 3 && estado == 0 ) {
+				bootbox.alert('Debe Seleccionar el Estado', function() {	    
+					$('#id_cod_estado').select2('open');
+				});
+			}
+			else if (tipo == 3 && circuito == 0 ) {
+				bootbox.alert('Debe Seleccionar el Circuito', function() {	    
+					$('#id_circuito').select2('open');
+				});
+			}
+			else if (tipo == 4 && estado == 0 ) {
+				bootbox.alert('Debe Seleccionar el Estado', function() {	    
+					$('#id_cod_estado').select2('open');
+				});
+			}
+			else if (tipo == 4 && municipio == 0 ) {
+				bootbox.alert('Debe Seleccionar el Municipio', function() {	    
+					$('#id_cod_municipio').select2('open');
+				});
+			}
+            else {
+				if (tipo == 1) {
+					sub_titulo = ""
+					var data_send = {'id_eleccion':id_eleccion, 'id_candidato':id_candidato, 'csrfmiddlewaretoken': "{{ csrf_token }}",'bandera':bandera,'tipo':tipo }
+				}else if (tipo == 2){
+					sub_titulo = "(Estado: "+nom_est+")"
+					var data_send = {'id_eleccion':id_eleccion, 'id_candidato':id_candidato, 'csrfmiddlewaretoken': "{{ csrf_token }}",'bandera':bandera,'tipo':tipo, 'estado':estado}
+				}else if (tipo == 3){
+
+					sub_titulo = "(Estado: "+nom_est+' - Circuito '+nom_cir+")"
+					var data_send = {'id_eleccion':id_eleccion, 'id_candidato':id_candidato, 'csrfmiddlewaretoken': "{{ csrf_token }}",'bandera':bandera,'tipo':tipo, 'circuito':circuito }
+				}else{
+					sub_titulo = "(Estado: "+nom_est+' - Municipio: '+nom_mun+")"
+					var data_send = {'id_eleccion':id_eleccion, 'id_candidato':id_candidato, 'csrfmiddlewaretoken': "{{ csrf_token }}",'bandera':bandera,'tipo':tipo, 'municipio':municipio }
+				}
+                $.post('',data_send, function(data) {
+                    var lista_json = []
+                    var lista_json2 = []
+                    var total_vo = 0;
+                    $.each(data, function(i){
+                        cand = []
+                        total_vo += data[i].total    
+                    })
+                    var voto_cand = 0;
+		    
+                    $.each(data, function(i, obj){
+                        if(id == 'grupo'){
+                            cand = []
+                            cand[0] = data[i].descripcion
+                            cand[1] = data[i].total
+                            
+                            cand2 =[]
+                            cand2[0] = data[i].descripcion
+                            cand2[1] = parseFloat(((data[i].total * 100)/(total_vo)).toFixed(2));
+                            porcentaje = cand2[1]
+                            lista_json.push(cand);
+                            lista_json2.push(cand2);
+                            //var newRow = TUbch.fnAddData([obj.descripcion, obj.total,porcentaje]);
+                        }
+                        else {
+                            cand = [];
+
+                            if (data[i].sexo == '1'){
+                                cand[0] = 'Femenino'
+                            }
+                            else{
+                                cand[0] =('Masculino')
+                            }
+                            //cand[0] = data[i].sexo
+                            cand[1] = data[i].total
+                            
+                            cand2 =[]
+                            if (data[i].sexo == '1'){
+                                cand2[0] = 'Femenino'
+                            }
+                            else{
+                                cand2[0] =('Masculino')
+                            }
+                            cand2[1] = parseFloat(((data[i].total * 100)/(total_vo)).toFixed(2));
+                            porcentaje = cand2[1]
+                            lista_json.push(cand);
+                            lista_json2.push(cand2);
+                            //var newRow = TUbch.fnAddData([cand2[0], obj.total,porcentaje]);
+                        }
+                    })
+                    
+                    if (lista_json != '' ) {
+                        console.log(lista_json)
+                        $('#container1').highcharts({
+                            chart: {
+                                plotBackgroundColor: null,
+                                plotBorderWidth: null,
+                                plotShadow: false,
+                            },
+                            title: {
+                                text: titulo,
+                            },
+							subtitle: {
+                                text: '<span style="color:#0000FF">'+nom_candidato+'</span><br>'+sub_titulo,
+                            },
+                            tooltip: {
+                                pointFormat: '{series.name}: <b>{point.percentage:.2f}%</b>'
+                            },
+                            plotOptions: {
+                                pie: {
+                                    allowPointSelect: true,
+                                    cursor: 'pointer',
+                                    dataLabels: {
+                                        enabled: true,
+                                        format: '<b>Votos</b>: (<span style="color:#FF0000">{point.y}</span>)  {point.percentage:.2f} %',
+                                        style: {
+                                            color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
+                                            }
+                                    },
+                                    showInLegend: true
+                                }
+                            },
+                            series: [{
+                                type: 'pie',
+                                name: 'Porcentaje de Votos',
+                                data: lista_json,
+                            }]
+                        });
+                        console.log(lista_json2)
+                        $('#container2').highcharts({
+                            chart: {
+                                type: 'column'
+                            },
+                            title: {
+                                text: titulo,
+                            },
+                            subtitle: {
+                                text: '<span style="color:#0000FF">'+nom_candidato+'</span><br>'+sub_titulo,
+                            },
+                            xAxis: {
+                                type: 'category'
+                            },
+                            yAxis: {
+                                title: {
+                                    text: ''
+                                    //texto lateral                                    
+                                }
+                            },
+                            legend: {
+                                enabled: false
+                            },
+                            plotOptions: {
+                                series: {
+                                    borderWidth: 0,
+                                    dataLabels: {
+                                        enabled: true,
+                                        format: '<span style="color:#FF0000">{point.y}</span> %',
+                                    }
+                                }
+                            },
+                            tooltip: {
+                                headerFormat: '<span style="font-size:11px">{series.name}</span><br>',
+                                pointFormat: '<span style="color:{point.color}">{point.name}</span>: <b>{point.y:.2f}%</b><br/>'
+                            },
+                            series: [{
+                                name: 'Brands',
+                                colorByPoint: true,
+                                data: lista_json2,
+                            }], 
+                        });
+                    }
+                    else{
+                        bootbox.alert('Disculpe aun no hay registros para esta elección', function() {	    
+                            $('#container1,#container2').html('')
+                        });
+
+                    }
+                },'json');
+                
+            }
+        })
+     })
+    
+</script>
+
+
+
+<body>
+    <center><h3>Generación de Gráficos por Candidato</h3></center>
+
+    <div style="width: 80%;" style="text-align: center" class="panel panel-success">
+        <div class="panel-heading">
+            Seleccione Elección a Consultar
+        </div>
+        <div class="form-inline" style="text-align: left;font-weight: bold">
+			<fieldset><legend class="titulo">Seleccione la Elección</legend></fieldset>
+			<br/>
+            <div class="form-group col-xs-2">
+            </div>
+            <div class="form-group col-xs-2">
+                <label>Elección: </label>
+            </div>
+            <div class="form-group col-xs-6">
+                <select class="form-control select2 input-sm " style="width:100%;" id="id_eleccion" name="id_eleccion">
+                    <option value="0">Seleccione</option>
+                    {% for n in listar_e %}
+                    <option value="{{n.id}}">{{ n.nombre }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group col-xs-2">
+            </div>
+        </div>
+        <br/>
+	
+		<div class="form-inline" style="text-align: left;font-weight: bold">
+			<fieldset><legend class="titulo">Seleccione el Candidato</legend></fieldset>
+			<br/>
+            <div class="form-group col-xs-2">
+            </div>
+            <div class="form-group col-xs-2">
+                <label>Candidato: </label>
+            </div>
+            <div class="form-group col-xs-6">
+                <select class="form-control select2 input-sm " style="width:100%;" id="id_candidato" name="id_candidato">
+					<option value="0">Seleccione</option>
+				</select>
+            </div>
+            <div class="form-group col-xs-2">
+            </div>
+        </div>
+        <br/>
+        <br/>
+		
+		
+		<div class="panel-body" style="text-align: left;font-weight: bold">
+			<fieldset><legend class="titulo">Seleccione el Tipo de Consulta</legend></fieldset>
+			<br/>
+			<div class="col-xs-1">
+				Tipo:
+            </div>
+            <div class="col-xs-5">
+				<select style="width: 100%;font-weight:bold;font-size: 13px" id="id_tipo" >
+					<option value='0'>Seleccione</option>
+					<option value='1'>General</option>
+					<option value='2'>Por Estado</option>
+					<option value='3'>Por Circuito</option>
+					<option value='4'>Por Municipio</option>
+				</select>
+			</div>
+		</div>
+		
+		<div class="panel-body" id="div_topologia" style="text-align: left;font-weight: bold">
+			<fieldset><legend class="titulo">Seleccione la Topología de acuerdo al tipo de consulta que seleccionó</legend></fieldset>
+			<br/>
+			<div class="col-xs-1" ><label>Estados:</label></div>
+			<div class="col-xs-5">
+				<select style="width:100%;" class="form-control input-sm" id="id_cod_estado" name="estado" required=True>
+					<option value="0">Seleccione</option>
+					{% for e in list_estados %}
+					<option value="{{e.cod_estado}}">{{ e.estado }}</option>
+					{% endfor %}
+				</select>
+			</div>
+			<div class="col-xs-1" ><label >Circuitos:&nbsp;</label></div>
+			<div class="col-xs-5">
+				<select style="width:100%;" id="id_circuito" name="circuito">
+					<option value="0" selected="selected">Seleccione</option>
+				</select>
+			</div>  
+		</div>
+		
+		<div class="panel-body" id="div_topologia" style="text-align: left;font-weight: bold">
+		<div class="col-xs-1" ><label>Municipios:&nbsp;</label></div>
+			<div class="col-xs-5">
+				<select style="width:100%;" id="id_cod_municipio" name="municipio">
+					<option value="0" selected="selected">Seleccione</option>
+				</select>
+			</div>  
+		</div>
+		
+		
+
+        <div class="row" style="text-align: left;font-weight: bold;width: 95%">
+            <label>Consultar por:&nbsp;&nbsp;&nbsp;&nbsp</label>
+			<button role="button" id="grupo" style="font-weight: bold"  class="btn btn-success">
+				<span class="glyphicon glyphicon-stats"></span>&nbsp;Grupo Etáreo
+			</button>
+            <button role="button" id="exportar_grupo" style="font-weight: bold"  class="btn btn-success">
+				<span class="glyphicon glyphicon-file"></span>&nbsp;PDF Detallado
+			</button>
+        </div>
+        <br/>
+        <br/>
+        <div class="row" style="text-align: left;font-weight: bold;width: 95%">
+           <label>Consultar por:&nbsp;&nbsp;&nbsp;&nbsp</label>
+            <button role="button" id="sexo" class="btn btn-info" style="font-weight: bold" >
+				<span class="glyphicon glyphicon-stats "></span>&nbsp;Sexo
+			</button>
+        </div>
+        <br/>
+        <br/>
+        <br/>
+        <br/>
+
+
+        
+    </div>
+    <div id="id_graficas" style="width: 80%">
+        <div style="float: left;width: 50%;">
+            <div id="container1" style="min-width: 310px; height: 400px; max-width: 600px; margin: 0 auto"></div>
+            
+        </div>
+        <div style="float: left;width: 50%;">
+            <div id="container2" style="min-width: 310px; height: 400px; max-width: 600px; margin: 0 auto"></div>
+        </div>
+    </div>
+    <div style="width: 50%">
+        <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>
+    </div>
+
+    
+</body>
+</html>
+
+{% endblock %}
+
+
+

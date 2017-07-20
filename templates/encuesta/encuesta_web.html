@@ -1,0 +1,324 @@
+{% block contenido %}
+<head>
+        <meta charset="utf-8"/>
+        <title>{% block titulo %} Exit Poll {% endblock %}</title>
+        <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}css/bootstrap.css">
+        <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}css/bootstrap.theme.css">
+       
+        
+        <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}css/select2.css"/>
+        <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}css/select2-bootstrap.css"/>
+        <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}css/dataTables.bootstrap.css"/>
+        <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}css/dataTables.responsive.css"/>
+		<link rel="stylesheet" type="text/css" href="{{STATIC_URL}}css/jquery.fancybox.css"/>
+        <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}css/bootstrap-datepicker.css" />
+        
+        <script src="{{ STATIC_URL }}js/jquery-1.11.2.min.js"></script>
+        <script src="{{ STATIC_URL }}js/bootstrap.min.js"></script>
+        <script src="{{ STATIC_URL }}js/jquery.dataTables.js"></script>
+	
+
+	
+	
+        <script src="{{ STATIC_URL }}js/validaciones.js"></script>
+        <script src="{{ STATIC_URL }}js/jquery.alphanumeric.js"></script>
+	<script src="{{ STATIC_URL }}js/jquery.fancybox.js"></script>
+        <script src="{{ STATIC_URL }}js/fileinput.min.js"></script>
+        <script src="{{ STATIC_URL }}js/bootbox.js"></script>
+	
+	
+        
+        <script src="{{STATIC_URL}}js/bootstrap-datepicker.js"></script>
+        <script src="{{STATIC_URL}}js/bootstrap-datepicker.es.min.js"></script>
+        
+        <script src="{{ STATIC_URL }}js/select2.js"></script>
+        <script src="{{ STATIC_URL }}js/select2_locale_es.js"></script>
+        <script src="{{ STATIC_URL }}js/bootstrap-select.js"></script>
+        <script src="{{ STATIC_URL }}js/dataTables.bootstrap.js"></script>
+        <script src="{{ STATIC_URL }}js/dataTables.responsive.min.js"></script>
+        <script src="{{ STATIC_URL }}js/highcharts.js"></script>
+        <script src="{{ STATIC_URL }}js/footerfijo.js"></script>
+</head>
+
+
+<script type="text/javascript">
+    
+$(document).ready(function(){
+		$('#div_preguntas').on('change','input.unico',function(){
+				var padre = $(this).parent('li').parent('ul').parent('div')
+		
+				
+				if($(this).is(':checked')) {  
+						 padre.find('input:checkbox').not(this).prop('checked',false);
+				} 
+				
+				
+		})
+		var encuesta_id = $('#encuesta_id').val()
+		$("#id_cod_estado,#id_cod_municipio").select2();
+		url = 'http://www.exitpoll.org.ve'
+		$.get(url+'/api/encuestas/'+encuesta_id,function(data){
+			nom_enc = data.nombre
+			id_enc = data.id
+			$('#encuesta').text(data.nombre);
+		},'json')
+		
+		$('#div_preguntas').on('click','div > ul > li > label.l_respuesta',function(){
+				var este = $(this);
+				var padre_id = $(this).parent('li').parent('ul').parent('div').attr('id')
+		        var padre = $(this).parent('li')
+
+				var check = padre.find('input:checkbox')
+				var clase = check.hasClass( "unico" )
+
+				if (clase == true) {
+						$('#'+padre_id).find('ul li input:checkbox').prop('checked',false)	
+				}
+				if(check.is(':checked')) {  
+						este.siblings('input:checkbox').prop('checked',false);
+				} else {  
+					este.siblings('input:checkbox').prop('checked',true);
+				}  
+		});
+		
+		$('#div_genero').on('click','div > label',function(){
+				var este = $(this).attr('id');
+
+
+				if (este == 'sexo1') {
+						$('#id_sexo1').prop('checked',true);
+				} else if (este == 'sexo2') {
+						$('#id_sexo2').prop('checked',true);
+				}
+		});
+		
+		$.get(url+'/aplicada/encuesta_api/'+encuesta_id,function(data){
+				var cod_pre = 0;
+				var cod_res = 0;
+				var cod_resp = 0;
+				var j = 0
+				$.each(data, function(i,obj_p) {
+						var preguntas = "";
+						var respuestas = "";
+
+						cod_resp = obj_p.cod_pregunta.id;
+						if (obj_p.cod_pregunta.id != cod_pre  ) {
+
+							j = j + 1 
+								preguntas +='<div class="col-xs-12 panel-primary "  id="div_pregunta_'+j+'"><div class="panel-heading text-center" style="font-weight: bold;font-size:20" ><span class="glyphicon glyphicon-th-list"></span> '+obj_p.cod_pregunta['cod_pregunta']+'. '+obj_p.cod_pregunta['pregunta']+''
+								if (obj_p.cod_pregunta.tipo == '1'){
+										preguntas += ' <label style="color: #E8E5E5;font-size: 14px" >(Selección Simple)</label></div><br>'
+								}
+								else{
+										preguntas += ' <label style="color: #E8E5E5;font-size: 14px">(Selección Multiple)</label></div><br>'
+								}
+
+						}
+						if (obj_p.cod_pregunta.id == cod_resp  ) {
+								if (obj_p.cod_pregunta.tipo == '1'){
+										respuestas += '<ul style="margin-left:30%"><li style="list-style: none"><input class="unico form-inline" type="checkbox" value="'+obj_p.id+'" name="respuesta[]" id="respuesta_'+j+'"/>&nbsp;&nbsp<label class="l_respuesta" id="respuesta_'+j+'" style="color: #00597C; font-size: 18px "> '+obj_p['respuesta']+'</label></li>'
+										if (obj_p.tipo == '2'){
+												respuestas += '<input type="text" style="font-weight: normal; width: 500px;height: 30px" maxlength=150 name="otras_{{i.id}}" id="otras{{ forloop.counter }}"/></ul>'
+										}
+								}else{
+										respuestas += '<ul style="margin-left:30%"><li style="list-style: none"><input type="checkbox" value="'+obj_p.id+'" name="respuesta[]" id="respuesta_'+j+'"/>&nbsp;&nbsp<label class="l_respuesta" style="color: #00597C; font-size: 18px "> '+obj_p['respuesta']+'</label></li>'
+										if (obj_p.tipo == '2'){
+												respuestas += '<input type="text" style="font-weight: normal; width: 500px;height: 30px" maxlength=150 name="otras_{{i.id}}" id="otras{{ forloop.counter }}"/></ul>'
+										}
+								}
+						}
+						
+						preguntas += '</div>'
+						
+						$( preguntas ).appendTo( "#div_preguntas" );
+
+						$( respuestas ).appendTo( "#div_pregunta_"+j);
+						
+						cod_pre = obj_p.cod_pregunta.id
+						cod_res = obj_p.id
+				});
+			
+			
+			
+		},'json')
+		
+		$('#enviar').click(function(e) {
+				//e.preventDefault();
+				$('select').on({
+						change: function() {
+							$(this).parent('div').removeClass('has-error');
+						}
+				});
+				$('input').on({
+						keypress: function() {
+							$(this).parent('div').removeClass('has-error');
+						}
+				});
+				
+				var grupo_etareo = $('#id_grupo_etareo').val();
+				var sexo = $('input[name="sexo"]:checked').val();
+				var estado = $('#id_cod_estado').val();
+				var municipio = $('#id_cod_municipio').val();
+				var ip_equipo = $('#ip_equipo').val();
+				//alert(ip_equipo)
+		
+				if (estado == 0) {
+						bootbox.alert("Debe seleccionar el Estado al que pertenece", function() {
+								$('#id_cod_estado').parent('div').addClass('has-error'); // colocar class has-error de boostrap
+								$('#id_cod_estado').select2('open')  
+						})
+				}else if (municipio == 0) {
+						bootbox.alert("Debe seleccionar el Municipio al que pertenece", function() {
+								$('#id_cod_municipio').parent('div').addClass('has-error'); // colocar class has-error de boostrap
+								$('#id_cod_municipio').select2('open')  
+						})
+				}else if (grupo_etareo == '') { //si elección es igual a vacio
+						bootbox.alert("Disculpe, Edad invalida", function() {
+								$('#id_grupo_etareo').parent('div').addClass('has-error'); // colocar class has-error de boostrap
+						});
+				}else if (!$('input[name="sexo"]').is(':checked'))  {
+								bootbox.alert("Debe seleccionar su Sexo", function() {
+						})
+				}else{
+						var tmp =[];
+						var checkboxValues = "";
+						
+						$('input:checkbox[name="respuesta[]"]:checked').each( function(){
+								var $chkbox = $(this);
+								var otras = $('input:text[name="otras_'+$chkbox.val()+'"]').val()
+								
+								if (typeof otras === 'undefined') {
+										checkboxValues += $chkbox.val() +'_no,';
+								}else{
+										checkboxValues += $chkbox.val()+'_'+  otras+',';
+								}
+						});
+						id = checkboxValues.substring(0, checkboxValues.length - 1);
+						if (id == '') {
+								bootbox.alert("Disculpe, para enviar la Encuesta debe responder al menos una (1) pregunta", function() {
+								});
+						}
+						else{
+								$.post('/aplicada/guardar_encuesta/',$('#formresp').serialize()+'&id='+id+'&estado='+estado+'&municipio='+municipio+'&sexo='+sexo+'&edad='+grupo_etareo+'&ip_equipo='+ip_equipo, function(data){
+										var save = (data.status);
+										if (save == 'Guardado') {
+												bootbox.alert("Gracias por Participar", function() {
+														window.location = url+'/aplicada/encuesta_web/'+id_enc
+												});
+												
+										}
+								})
+						}
+				}           
+		});
+
+	
+});
+     
+</script>
+<body style="background-image: url({{ STATIC_URL }}img/background.jpg); background-size: 100%; background-repeat: no-repeat">
+<form id="formresp" method="post">
+{% csrf_token %}
+{% if continua == '2' %}
+<div>
+		<img src='/static/img/error_ip.jpg' style='width:60%;margin-left:20%; margin-top: 5%'/>
+</div>
+
+{% else %}
+		{% if estatus == '2' and tipo != '2' %}
+		<div>
+		   
+			<div style="width: 80%;margin: auto" class="panel panel-primary" >
+				<div>
+						<img style="width: 100%" src="{{ STATIC_URL }}img/topeEncuesta.jpg"/>
+						<span style="position: absolute; right: 25%; top: 5%; color: white; font-size: 24; font-weight: bold">Encuesta</span> 
+						<span id="encuesta" style="position: absolute; left:  55%; top: 9%; color: orange; text-align: justify; width: 30%; font-size: 20; font-weight: bold"></span> 
+						<nav style="width: 100%; background: linear-gradient(#007ac3, #00b4f3)" >
+								<span style="color: white;font-size: 16px; font-weight: bold">&nbsp;&nbsp;Encuestado N°: {{num_encuesta}}</span>
+						</nav>
+				</div>
+				<br>
+				<div class="row-fluid" style="width: 100%;text-align: justify">
+						<div class="col-md-12" style="font-size: 24px; color: #00597C" >
+								<input type="hidden" type="text" id="ip_equipo" value="{{ cookies_id  }}"/>
+								<label> Bienvenido, a continuación se le presenta una encuesta, con la finalidad conocer su opinión sobre diversos
+								temas, dependiendo de la pregunta podrá seleccionar una o más opciones, e incluso crear su propia opción si la
+								pregunta lo permite. Muchas gracias por participar. 
+								</label>
+						</div>
+					
+				</div>
+				<div>
+						&nbsp;&nbsp;
+				</div>
+				
+				<input id="encuesta_id" type="hidden" value="{{encuesta}}"/>
+				<div class="row-fluit" style="font-weight: bold; ">
+					<div class="col-md-12 text-left"  class= id="div_estado" >
+						<div class="col-md-2" ><label class="subtitulo" style="color: #00597C; font-size: 18px "><span class="glyphicon glyphicon-list-alt"></span>&nbsp;Estados:&nbsp;</label></div>
+						<div class="form-group col-md-4">
+							<select style="width:100%;" class="form-control input-sm" id="id_cod_estado" name="estado" required=True>
+								<option value="0">Seleccione</option>
+								{% for e in list_estados %}
+								<option value="{{e.cod_estado}}">{{ e.estado }}</option>
+								{% endfor %}
+							</select>
+						</div>
+						
+						<div class="col-md-2" ><label class="subtitulo" style="color: #00597C; font-size: 18px "><span class="glyphicon glyphicon-list-alt"></span>&nbsp;Municipios:&nbsp;</label></div>
+						<div class="form-group col-md-4">
+							<select style="width:100%; " id="id_cod_municipio" name="municipio">
+								<option value="0" selected="selected">Seleccione</option>
+							</select>
+						</div>  
+					</div>
+					<div class="col-md-12 text-left"  class= id="div_2" >
+						<div class="col-md-2" ><label class="subtitulo" style="color: #00597C; font-size: 18px "><span class="glyphicon glyphicon-pencil"></span>&nbsp;Edad:&nbsp;</label></div>
+						<div class="form-group col-md-4">
+							<input type="text" style="height: 30px" maxlength=3 name="grupo_etareo" id="id_grupo_etareo"/>
+						</div>
+						<div class="col-md-2" ><label class="subtitulo" style="color: #00597C; font-size: 18px "><span class="glyphicon glyphicon-check"></span>&nbsp;Sexo:&nbsp;</label></div>
+						<div id="div_genero" class="col-md-4">
+								
+								<div class="form-group col-md-6" style="color: #00597C; font-size: 18px ">
+									<label id="sexo1"><img style="width: 18px; height: 18px" src="{{ STATIC_URL }}img/mujer.png"/>Femenino:</label>
+									<input type="radio" id="id_sexo1" name="sexo" value="1"/>
+								</div>
+								<div class="form-group col-md-6" style="color: #00597C; font-size: 18px " >
+									<label id="sexo2"><img style="width: 18px; height: 18px" src="{{ STATIC_URL }}img/hombre.png"/>Masculino:</label>
+									<input type="radio" id="id_sexo2" name="sexo" value="2" />
+								</div>
+						</div>
+					</div>
+				</div>		
+				<div>
+						&nbsp;&nbsp;
+				</div>
+				<div id="div_preguntas">
+						
+				</div>
+				
+			   <div>
+				&nbsp;&nbsp;
+			   </div>
+				<div class="row text-center">
+					<button type="button" id="enviar" style="font-weight: bold;font-size: 18px " class="btn btn-primary">
+					<span class="glyphicon glyphicon-cloud-upload"></span>&nbsp;&nbsp;Enviar Encuesta</button>
+				</div>
+				</Br>
+				
+			</div>
+		   </div>
+		{% else %}
+		<div>
+				<img src='/static/img/disculpe_encuesta.jpg' style='width:80%;margin-left:10%; margin-top: 5%'/>
+		</div>
+		{% endif %}
+{% endif %}
+
+</form>
+</body>
+
+
+
+{% endblock %}

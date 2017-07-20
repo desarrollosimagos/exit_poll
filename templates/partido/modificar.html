@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+{% extends 'base.html' %}
+
+{% block contenido %}
+<html>
+<head>
+    <title>Modificar Partidos</title>
+</head>
+<script type="text/javascript">
+$(document).ready(function(){
+	var foto1 =  $("#div_foto1").val();
+	$("#id_foto").fileinput({
+        browseClass: "btn btn-primary btn-block",
+        showCaption: false,
+        showRemove: false,
+        showUpload: false,
+        browseLabel: "Imagen",
+        maxFileSize: 80,
+        allowedFileExtensions: ["jpg", "png"],
+        elErrorContainer: "#errorBlock",
+        msgSizeTooLarge:'Archivo muy pesado "{name}". (<b>{size} KB</b>) excede el tamaño máximo que es de <b>{maxSize} KB',
+        msgInvalidFileExtension: 'Extensiones invalidad "{name}". Solo admite archivos"{extensions}".',
+        initialPreview: [
+        "<img src='"+foto1+"' style='width:250px;height:135px;' class='file-preview-image' alt='The Moon' title='The Moon'>",
+        ],
+    });
+	
+    $('#n_partidos').alpha({allow:" "}); //Valida solo valores tipo texto
+    $('#siglas').alpha(); //Valida solo valores tipo texto
+    $('#correo').alphanumeric({allow:"@._"});
+    $('#twitter').alphanumeric({allow:"@._"});
+    $('#telefono').numeric(); //Solo permite numeros
+    $('#nom_presidente').alpha({allow:" "});
+    $('#ape_presidente').alpha({allow:" "});
+    $('#registrar').click(function(e){  //Valida al guardar que el rago no sea menor 3 caracteres
+        e.preventDefault();
+	
+	$('input').on({
+	    keypress: function() {
+		$(this).parent('div').removeClass('has-error');
+	    }
+	});
+			
+	if (($('#telefono').val().length < 7)) {
+	    bootbox.alert('Disculpe, Debe indicar el Teléfono del Partido', function() {	    
+		$('#telefono').parent('div').addClass('has-error');
+	    });
+	}
+	else if (($('#correo').val().length < 10)) {
+	    bootbox.alert('Disculpe, Debe indicar el Correo del Partido', function() {	    
+		$('#correo').parent('div').addClass('has-error');
+	    });
+	}
+	else if ($('#nom_presidente').val().length < 3) {
+	    bootbox.alert('Disculpe, Debe ingresar los Nombres de Presidente del Partido', function() {	    
+		$('#nom_presidente').parent('div').addClass('has-error');
+	    });
+	}
+	else if ($('#ape_presidente').val().length < 3) {
+	    bootbox.alert('Disculpe, Debe ingresar los Apellidos de Presidente del Partido', function() {	    
+		$('#nom_presidente').parent('div').addClass('has-error');
+	    });
+	}
+	else{
+	    $('#n_partidos,#siglas').prop('disabled',false);
+	    $('form').submit();
+	    $('#n_partidos,#siglas').prop('disabled',true);
+	}
+    });
+    $('#volver').click(function(){
+        url = '/partidos/'
+        window.location = url
+    })
+});
+</script>
+{% load templatag_grupos %}
+{% ifusergroup Registro %}
+
+<body>
+     <form method="post"  enctype="multipart/form-data">
+	{% csrf_token %}
+    <br/>
+    <br/>
+   
+	<div style="width: 80%;" class="panel panel-primary">
+	    <div class="panel-heading">
+	      <label  class="panel-title">Modificar Partidos</label>
+	    </div>
+	    <br/>
+	    <fieldset><legend class="titulo">Datos Principales del Partido</legend></fieldset>
+	    <br/>
+	    <div class="form-inline" >
+		<div class="form-group col-xs-1">
+		    <label>Nombre: </label>
+		</div>
+		<div class="form-group col-xs-5">
+		    <input type='text' maxlength="50" disabled="disabled" placeholder="Nombre Completo del Partido" style='width:100%' value='{{ obj_reg_part.n_partidos }}' required=True id="n_partidos" name="n_partidos"/>
+		</div>
+		<div class="form-group col-xs-1">
+		    <label>Siglas: </label>
+		</div>
+		<div class="form-group col-xs-5">
+		    <input type='text' style='width:100%' disabled="disabled" placeholder="Siglas del Partido" value='{{ obj_reg_part.siglas }}' maxlength="10" required id="siglas" name="siglas"/>
+		</div>
+	    </div>
+	    <br/>
+	    <br/>
+	    <br/>
+	    <div class="form-inline" style="text-align: left;font-weight: bold">
+		<div class="form-group col-xs-1">
+		    <label>Teléfono: </label>
+		</div>
+		<div class="form-group col-xs-5">
+		    <input type='text' style='width:100%' id="telefono" value='{{ obj_reg_part.telefono }}' placeholder="Ejemplo: 02432335566" maxlength="11" name="telefono" type="text" required=True />
+		</div>
+		<div class="form-group col-xs-1">
+		    <label>Correo: </label>
+		</div>
+		<div class="form-group col-xs-5">
+		    <input id="correo" value='{{ obj_reg_part.correo }}' placeholder="Correo electrónico, Ejem: partido@gmail.com" maxlength="40" style='width:100%' name="correo" type="text" required=True />
+		</div>
+	    </div>
+	    
+	    <br/>
+	    <br/>
+	    <br/>
+	    <div class="form-inline" >
+		<div class="form-group col-xs-1">
+		    <label>Twiter: </label>
+		</div>
+		<div class="form-group col-xs-5">
+		    <input id="twitter" value='{{ obj_reg_part.twitter }}' maxlength="30" placeholder="Ejem: @partido" style='width:100%' name="twitter" type="text" />
+		</div>
+		<div class="form-group col-xs-1" style="text-align: left;font-weight: bold">
+		    <label>Logo: </label>
+		</div>
+		<div class="form-group col-xs-5">
+			<div class="help-block file-error-message" id="errorBlock" style="display: none;">Error de Archivo. Sólo son soportados archivos ".png, .jpg".</div>
+		    <label class="cargar">
+			<input type="hidden" value="{{MEDIA_URL}}{{obj_reg_part.foto_partido}}" id='div_foto1'/>
+			<input style='width:336px' type='file' id='id_foto' name='foto_partido' value='{{obj_reg_part.foto_partido}}' onchange="PreviewImage();">
+		    </label>
+		</div>
+	    </div>
+	    <br/>
+	    <br/>
+	    <br/>
+	    <br/>
+	    <br/>
+	    <input id='user_create' type="hidden" name='user_create' value='{{ user.id }}'>
+	   
+	    <fieldset><legend class="titulo">Datos Personales del Presidente</legend></fieldset>
+	    <br/>
+	    <div class="form-inline" style="text-align: left;font-weight: bold">
+		<div class="form-group col-xs-1">
+		    <label>Nombre: </label>
+		</div>
+		<div class="form-group col-xs-5">
+		    <input type='text' style='width:100%' value='{{ obj_reg_part.nom_presidente }}'  placeholder="Nombre Completo del Presidente del Partido" maxlength="30" required id="nom_presidente" name="nom_presidente"/>
+		</div>
+		<div class="form-group col-xs-1">
+		    <label>Apellido: </label>
+		</div>
+		<div class="form-group col-xs-5">
+		    <input type='text' style='width:100%' value='{{ obj_reg_part.ape_presidente }}' placeholder="Apellido Completo del Presidente del Partido" maxlength="30" required id="ape_presidente" name="ape_presidente"/>
+		</div>
+	    </div>
+	    <br/>
+	    <br/>
+	    <br/>
+	    <div class="row" style="text-align: center">
+		<button type="button" id="volver" style="font-weight: bold;font-size: 13px" class="btn btn-warning " >
+		    &nbsp;<span class="glyphicon glyphicon-chevron-left"></span>&nbsp;Volver
+		</button>
+		<button type="submit" id="registrar" style="font-weight: bold;font-size: 13px" class="btn btn-info"/>
+		    &nbsp;<span class="glyphicon glyphicon-floppy-disk"></span>&nbsp;Guardar Cambios
+		</button>
+	    </div>
+	    <br/>
+	</div>
+	
+    </form>
+</body>
+{% else %}
+<p style="color: #FF0000; font-size: 18px">Disculpe No esta autorizado para esa área.</p>
+{% endifusergroup %}
+</html>
+{% endblock %}

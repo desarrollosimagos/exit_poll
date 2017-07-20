@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+{% extends 'base.html' %}
+
+{% block contenido %}
+<html>
+<head>
+    <title>Modificar Centros</title>
+</head>
+<script type="text/javascript">
+    
+$(document).ready(function(){
+    $("#id_cod_estado,#id_cod_municipio,#id_cod_parroquia").select2();
+    $('#id_cod_n').numeric(); //Valida solo valores tipo texto en descripción
+    $('#nombre').alpha({allow:" -"}); //Solo permite numeros y estos caractes en el rago del grupo
+    $('#registrar').click(function(e){ //Valida al guardar que el rago no sea menor 8 caracteres
+	e.preventDefault();
+	
+	$('input').on({
+	    keypress: function() {
+		$(this).parent('div').removeClass('has-error');
+	    }
+	});
+
+	if (($('#id_sector').val() == '')) {
+	    bootbox.alert('Disculpe, Debe Colocar el Nombre del Sector', function() {	    
+		$('#id_sector').parent('div').addClass('has-error');
+	    });
+	}
+	else if($('#id_sector').val() == null ||  $('#id_sector').val().length == 0 || /^\s+$/.test($('#id_sector').val())) {
+	    bootbox.alert('Disculpe, no esta registrando nada', function() {	    
+		$('#id_sector').parent('div').addClass('has-error');
+	    });
+	}
+	else {
+	    $('#id_cod_parroquia,#id_cod_municipio,#id_cod_estado,#cod_sector').prop('disabled',false);
+	    $('form').submit();
+	    $('#id_cod_parroquia,#id_cod_municipio,#id_cod_estado,#cod_sector').prop('disabled',true);
+        }
+    });
+    $('#volver').click(function(){
+        url = '/configuraciones/topologia/sectores/'
+        window.location = url
+    })
+});
+
+</script>
+<body>
+    {% load templatag_grupos %}
+    {% ifusergroup Topologia %}
+    
+    <form method="post" id="id_form">
+	{% csrf_token %}
+    </br>
+    </br>
+   
+	<div style="width: 80%" class="panel panel-primary">
+            <div class="panel-heading">
+              Modificar Sector
+            </div>
+            <br/>
+	     <fieldset><legend class="titulo">Datos del Sector</legend></fieldset>
+	    <div class="form-inline">
+		<div class="form-group col-xs-4">
+		    <label>Estado:</label>
+		    <select id="id_cod_estado" style="width: 80%" disabled="disabled" name="estado" class="form-control select2 input-sm" >
+			<option value="">-----------------------------</option>
+			{% for e in list_estado %}
+			    {% if e.cod_estado == obj_reg_sec.estado_id%}
+				<option value='{{e.cod_estado}}' selected='selected'>{{ e.estado }}</option>
+			    {% endif %}
+			    {% if not e.cod_estado == obj_reg_sec.estado_id %}
+				<option value='{{e.cod_estado}}'>{{ e.estado }}</option>
+			    {% endif %}
+			{% endfor %}
+		    </select>
+		</div>
+		<div class="form-group col-xs-4">
+		    <label>Municipio:</label>
+		    <select id="id_cod_municipio" style="width: 70%" disabled="disabled" class="form-control select2 input-sm" name="municipio" >
+			<option value="" selected="selected">----------------------------</option>
+			{% for m in list_mun %}
+			    {% if m.cod_municipio == obj_reg_sec.municipio%}
+				<option value='{{m.cod_municipio}}' selected='selected'>{{m.municipio}}</option>
+			    {% endif %}
+			    {% if not m.cod_municipio == obj_reg_sec.municipio%}
+				<option value='{{m.cod_municipio}}'>{{m.municipio}}</option>
+			    {% endif %}
+			{% endfor %}
+		    </select>
+		</div>
+		<div class="form-group col-xs-4">
+		    <label>Parroquia:</label>
+		    <select id="id_cod_parroquia" name="parroquia" disabled="disabled" class="form-control select2 input-sm" style="width: 70%" >
+			<option value="" selected="selected">---------------------</option>
+			{% for p in list_par %}
+			    {% if p.cod_parroquia == obj_reg_sec.parroquia%}
+				<option value='{{p.cod_parroquia}}' selected='selected'>{{p.parroquia}}</option>
+			    {% endif %}
+			    {% if not p.cod_parroquia == obj_reg_sec.parroquia%}
+				<option value='{{p.cod_parroquia}}'>{{p.parroquia}}</option>
+			    {% endif %}
+			{% endfor %}
+		    </select>
+		</div>
+            </div>
+	    <br/>
+	    <br/>
+	    <br/>
+            <div class="form-inline">
+		<div class="form-group col-xs-4" >
+		    <label>C&oacute;digo:</label>
+		    <input type="text" id="cod_sector" style="width: 80%" disabled="disabled" value="{{obj_reg_sec.cod_s }}" maxlength="2" name="cod_s" />
+		</div>
+		<div class="form-group col-xs-8">
+		    <label>Nombre:&nbsp;&nbsp;&nbsp;</label>
+		    <input type="text" style="width: 86%" value="{{obj_reg_sec.sector }}" id="id_sector" maxlength="125" name="sector" class="form-control input-sm" />
+		</div>
+            </div>
+	    <input id='user_update' type="hidden" name='user_update' value='{{ user.id }}'>
+	    <input id='edit_user_create' type="hidden" name='user_create' value="{{obj_reg_sec.user_create.id }}">
+	    <br/>
+	    <br/>
+	    <br/>
+            <div class="row" style="text-align: center">
+		<button type="button" id="volver" style="font-weight: bold;font-size: 13px" class="btn btn-warning " >
+		    &nbsp;<span class="glyphicon glyphicon-chevron-left"></span>&nbsp;Volver
+		</button>
+		<button type="submit" id="registrar" style="font-weight: bold;font-size: 13px" class="btn btn-info"/>
+		    &nbsp;<span class="glyphicon glyphicon-floppy-disk"></span>&nbsp;Guardar Cambios
+		</button>
+	    </div>
+            <br/>
+	</div>
+    </form>
+    {% else %}
+    <p style="color: #FF0000; font-size: 18px">Disculpe No esta autorizado para esa área.</p>
+    {% endifusergroup %}
+</body>
+</html>
+{% endblock %}

@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+{% block contenido %}
+{% load templatag_grupos %}
+{% ifusergroup Topologia %}
+<script>
+$(document).ready(function(){
+    var TUbch = $('#tab_poligonales').dataTable({
+        "iDisplayLength": 25,
+        "iDisplayStart": 0,
+        "sPaginationType": "full_numbers",
+        "aLengthMenu": [25, 50, 75, 100],
+        "oLanguage": {"sUrl": "/static/js/es.txt"},
+        "aoColumns": [
+            {"sClass": "registro center", "sWidth": "8%"},
+            {"sClass": "registro center", "sWidth": "15%"},
+            {"sClass": "registro center", "sWidth": "10%"},
+            {"sClass": "registro center", "sWidth": "15%"},
+            {"sClass": "registro center", "sWidth": "15%"},
+            {"sClass": "registro center", "sWidth": "15%"},
+            {"sWidth": "3%", "bSortable": false, "sClass": "center sorting_false", "bSearchable": false},
+            {"sWidth": "3%", "bSortable": false, "sClass": "center sorting_false", "bSearchable": false},
+        ]
+    });
+    $('#enviar').click(function(){
+        url = '/configuraciones/topologia/poligonales/registrarpoligonal/'
+        window.location = url
+    })   
+
+});
+</script>
+<div style="width:90%">
+    <button role="button" class="btn btn-primary" style="font-weight: bold;font-size: 13px" id="enviar" >
+        &nbsp;<span class="glyphicon glyphicon-plus"></span>&nbsp;Agregar Poligonal</button>
+    </br>
+    </br>
+
+    <table style="width:100%;" border="0" align="center" cellspacing="1" id="tab_poligonales" align="center"
+           class="table table-bordered table-striped table-hover table-condensed dt-responsive table-responsive" style="width:30%">
+        <thead style="font-size: 16px">
+            <tr class="info">
+            <th style='text-align: center' colspan="8">Listado de Poligonales</th>
+            </tr>
+            <tr class="info">
+                <th style='text-align: center'>Cod Po</th>
+                <th style='text-align: center'>Poligonal</th>
+                <th style='text-align: center'>Estado</th>
+                <th style='text-align: center'>Municipio</th>
+                <th style='text-align: center'>Parroquia</th>
+                <th style='text-align: center'>Sector</th>
+                <th style='text-align: center'>Editar</th>
+                <th style='text-align: center'>Borrar</th>
+            </tr>
+        </thead>
+        <tbody>    
+                {% for m in listar_poligonales %}
+                <tr style="font-size: 16px" class="{% cycle 'impar' 'par' %}">
+                    <td>
+                        {{m.cod_pol}}
+                    </td>
+                    <td>
+                        {{m.poligonal}}
+                    </td>
+                    <td>
+                        {{m.estado}}
+                    </td>
+                    <td>
+                       
+                        {% for c in list_m %}
+                            {% if c.estado_id == m.estado_id and c.cod_municipio == m.municipio %}
+                                {{c.municipio}}
+                            {% endif %}
+                        {% endfor %}
+                    </td>
+                    <td>
+                        {% for p in list_p %}
+                            {% if p.estado_id == m.estado_id and p.cod_municipio == c.municipio and p.cod_parroquia == m.parroquia %}
+                                {{p.parroquia}}
+                            {% endif %}
+                        {% endfor %}
+                    </td>
+                    <td>
+                        {% for s in list_s %}
+                            {% if s.estado_id == m.estado_id and s.municipio == m.municipio and s.parroquia == m.parroquia and s.cod_s == m.sector %}
+                                {{s.sector}}
+                            {% endif %}
+                        {% endfor %}
+                    </td>
+                    <td style='text-align: center'>
+                        <a href="{% url "editar_poligonal" m.id %}"><img style="width:25px;height: 25px" src="{{ STATIC_URL }}img/edit.png"/></a>
+                    </td>
+                    <td style='text-align: center'>
+                        <a href="{% url "borrar_poligonal" m.id %}"><img style="width:25px;height: 25px" src="{{ STATIC_URL }}img/borrar.png"/></a>
+                    </td>
+                </tr>
+                {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<p style="color: #FF0000; font-size: 18px">Disculpe No esta autorizado para esa área.</p>
+{% endifusergroup %}
+{% endblock %}

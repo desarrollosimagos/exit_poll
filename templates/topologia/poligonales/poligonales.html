@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+{% extends 'base.html' %}
+
+{% block contenido %}
+
+<html>
+<head>
+    <title>Registrar Centros</title>
+</head>
+<script>
+$(document).ready(function() {
+    $("#id_cod_estado,#id_cod_municipio,#id_cod_parroquia,#id_cod_sector").select2();
+    $('#id_cod_pol').numeric(); //Valida solo valores tipo texto en descripción
+    $('#id_poligonal').alpha({allow:" "}); //Solo permite numeros y estos caractes en el rago del grupo
+
+    $('#limpiar').click(function(){
+        $('#id_cod_estado').select2('val', '0');
+	$('#id_cod_municipio').select2('val', '0');
+	$('#id_cod_parroquia').select2('val', '0');
+	$('#id_cod_sector').select2('val', '0');
+    })
+    
+    $('#registrar').click(function(e){
+	e.preventDefault();
+	
+	$('input').on({
+	    keypress: function() {
+		$(this).parent('div').removeClass('has-error');
+	    }
+	});
+	
+	var estado    = $('#id_cod_estado').find('option').filter(':selected').val()
+	var municipio    = $('#id_cod_municipio').find('option').filter(':selected').val()
+	var parroquia    = $('#id_cod_parroquia').find('option').filter(':selected').val()
+	var sector    = $('#id_cod_sector').find('option').filter(':selected').val()
+	
+	if (estado == 0) {
+	    bootbox.alert('Disculpe, Debe Seleccionar el Estado', function() {	    
+		$('#id_cod_estado').select2('open');
+	    });  
+	}
+	else if (municipio == 0) {
+	    bootbox.alert('Disculpe, Debe Seleccionar el Municipio', function() {	    
+		$('#id_cod_municipio').select2('open');
+	    });
+	}
+	else if (parroquia == 0) {
+	    bootbox.alert('Disculpe, Debe Seleccionar la Parroquia', function() {	    
+		$('#id_cod_parroquia').select2('open');
+	    });
+
+	}
+	else if (sector == 0) {
+	    bootbox.alert('Disculpe, Debe Seleccionar el Sector', function() {	    
+		$('#id_cod_sector').select2('open');
+	    });
+	}
+	else if ($('#id_cod_pol').val() == '') {
+	    bootbox.alert('Disculpe, Debe Colocar el Código de la Poligonal', function() {	    
+		$('#id_cod_pol').parent('div').addClass('has-error');
+	    }); 
+	}
+	else if (($('#id_poligonal').val() == '')) {
+	    bootbox.alert('Disculpe, Debe Colocar el Nombre de la Poligonal', function() {	    
+		$('#id_poligonal').parent('div').addClass('has-error');
+	    }); 
+	}
+	else if($('#id_cod_pol').val() == 00 || $('#id_cod_parroquia').val() == 0 ) {
+            bootbox.alert('Disculpe, Código invalido', function() {	    
+                $('#id_cod_pol').parent('div').addClass('has-error');
+            });
+        }
+	else {
+            $.post('',$('#id_form').serialize()+'&bandera=true',function(response){
+		if (response == 'existe') {
+		    bootbox.alert('Disculpe, Este Código ya esta asociado a ese Estado', function() {	    
+			$('#id_poligonal').parent('div').addClass('has-error');
+		    }); 
+		}
+		else{
+		    $('#id_form').submit(); 
+		}
+	    });
+        }
+    });
+    $('#volver').click(function(){
+        url = '/configuraciones/topologia/poligonales/'
+        window.location = url
+    })
+});
+</script>
+<body>
+    {% load templatag_grupos %}
+    {% ifusergroup Topologia %}
+    <br/>
+    <br/>
+    <form method="post" id="id_form">
+	{% csrf_token %}
+	<div style="width: 95%" class="panel panel-primary">
+            <div class="panel-heading">
+		<label class="panel-title">Registrar Poligonal</h3>
+            </div>
+	    <br/>
+	    <fieldset><legend class="titulo">Datos de la Poligonal</legend></fieldset>
+            <br/>
+	    <div class="form-inline">
+		<div class="form-group col-xs-4">
+		    <label>Estado:&nbsp;&nbsp;</label>
+		    <select id="id_cod_estado" style="width: 75%" name="estado" class="form-control select2 input-sm" >
+			<option value="0">Seleccione</option>
+			{% for e in list_estado %}
+			    <option value='{{e.cod_estado}}'>{{ e.estado }}</option>
+			{% endfor %}
+		    </select>
+		</div>
+		<div class="form-group col-xs-4">
+		    <label>Municipio:&nbsp;&nbsp;</label>
+		    <select id="id_cod_municipio" style="width: 70%" class="form-control select2 input-sm" name="municipio" >
+			<option value="0" selected="selected">Seleccione</option>
+		    </select>
+		</div>
+		<div class="form-group col-xs-4">
+		    <label>Parroquia:&nbsp;&nbsp;</label>
+		    <select id="id_cod_parroquia" name="parroquia" class="form-control select2 input-sm" style="width: 70%" >
+			<option value="0" selected="selected">Seleccione</option>
+		    </select>
+		</div>
+            </div>
+	    <br/>
+	    <br/>
+	    <br/>
+            <div class="form-inline">
+		<div class="form-group col-xs-4">
+		    <label>Sector:&nbsp;&nbsp;</label>
+		    <select id="id_cod_sector" name="sector" class="form-control select2 input-sm" style="width: 75%" >
+			<option value="0" selected="selected">Seleccione</option>
+		    </select>
+		</div>
+		<div class="form-group col-xs-4">
+		    <label>C&oacute;digo:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
+		    <input type="text" id="id_cod_pol" style="width: 70%"  maxlength="2" name="cod_pol"  />
+		</div>
+		<div class="form-group col-xs-4">
+		    <label>Nombre:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
+		    <input type="text" style="width: 70%" id="id_poligonal" maxlength="70" name="poligonal" class="form-control input-sm"  />
+		</div>
+            </div>
+	    <input id='user_create' type="hidden" name='user_create' value='{{ user.id }}'>
+	    <br/>
+	    <br/>
+	    <br/>
+             <div class="row" style="text-align: center">
+		<button type="button" id="volver" style="font-weight: bold;font-size: 13px" class="btn btn-warning " >
+		    &nbsp;<span class="glyphicon glyphicon-chevron-left"></span>&nbsp;Volver
+		</button>
+		<button type="submit" id="registrar" style="font-weight: bold;font-size: 13px" class="btn btn-primary"/>
+		    &nbsp;<span class="glyphicon glyphicon-floppy-disk"></span>&nbsp;Registrar
+		</button>
+		<button type="reset" id="limpiar" style="font-weight: bold;font-size: 13px" class="btn btn-success"/>
+		    &nbsp;<span class="glyphicon glyphicon-retweet"></span>&nbsp;&nbsp;Limpiar
+		</button>
+	    </div>
+            <br/>
+        </div>
+	
+    </form>
+    {% else %}
+    <p style="color: #FF0000; font-size: 18px">Disculpe No esta autorizado para esa área.</p>
+    {% endifusergroup %}
+</body>
+</html>
+{% endblock %}

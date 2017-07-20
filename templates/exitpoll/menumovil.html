@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+{% extends 'basemovil.html' %}
+
+
+{% block menu %}
+{% endblock %}
+{% block contenido %}
+<script type="text/javascript">
+    
+    $(document).ready(function(){
+        $("#exit_poll,#id_grupo_etareo,#id_cod_estado,#id_circuito,#id_cod_municipio").select2();
+
+		$('#exit_poll').change(function() {
+			var id_exit = $(this).val();
+					if (id_exit > 0) {
+		    $.get('/exitpoll/exit_poll_ajax/', {'id':id_exit}, function(datos) {
+				nivel = datos.nivel
+				$('#div_estado,#div_circuito,#div_municipio').prop('hidden',false)
+				//$('#val_nivel').val(nivel)
+				/*if (nivel == 5) { //Elecciones Presidenciales
+				$('#id_cod_estado,#id_cod_municipio,#id_circuito,#id_cod_parroquia,#id_cod_sector,#id_cod_pol,#id_cod_n').prop('hidden',true)
+				}
+				else if (nivel == 4) { //Eleccion de Gobernadores
+					$('#id_circuito,#id_cod_municipio,#id_cod_parroquia,#id_cod_sector,#id_cod_pol,#id_cod_n').prop('disabled',true)
+				}
+				else*/
+				//if (nivel == 3) { //Eleccion a Circuitos
+				//	$('#div_estado,#div_circuito,#div_municipio').prop('hidden',false)
+				//}
+				//else 
+				//if (nivel == 2) { //Eleccion asociada a las Alcaldias
+				//	$('#div_estado,#div_circuito,#div_municipio').prop('hidden',false)
+				//}
+				//else if (nivel == 1) { //Eleccion asociada a las Parroquias
+				//	$('#id_circuito,#id_cod_sector,#id_cod_pol,#id_cod_n').prop('disabled',true)
+				//}
+				//else if (nivel == 6) { //Eleccion asociada a las Poligonales (Consejos Comunales)
+				//	$('#id_circuito,#id_cod_n').prop('disabled',true)
+				//}
+				//else if (nivel == 7) { //Eleccion asociada a los Centros (UBCH)
+				//	$('#id_circuito,#id_cod_sector,#id_cod_pol').prop('disabled',true)
+				//}
+				},'json');    
+			}
+		});
+			
+        $('#enviar').click(function(e) {
+            //e.preventDefault();
+            $('select').on({
+                change: function() {
+                    $(this).parent('div').removeClass('has-error');
+                }
+            });
+            var id = $('#exit_poll').find('option').filter(':selected').val();
+            var grupo = $('#id_grupo_etareo').val();
+            var sexo = $('input[name="sexo"]:checked').val();
+			var estado = $('#id_cod_estado').val();
+			var circuito = $('#id_circuito').val();
+			var municipio = $('#id_cod_municipio').val();
+
+            if (grupo == 0) { //si elección es igual a 0
+                bootbox.alert("Disculpe, Edad invalida", function() {
+                    $('#id_grupo_etareo').parent('div').addClass('has-error'); // colocar class has-error de boostrap
+                });
+            }else if (!$('input[name="sexo"]').is(':checked'))  { 
+                bootbox.alert("Debe seleccionar su Sexo", function() {
+                })
+            }
+            else if (id == 0) { 
+                bootbox.alert("Debe seleccionar la Elección a votar", function() {
+                    $('#exit_poll').parent('div').addClass('has-error'); // colocar class has-error de boostrap
+                    $('#exit_poll').select2('open')  
+                })
+            }else if (estado == 0) { 
+                bootbox.alert("Debe seleccionar el Estado al que pertenece", function() {
+                    $('#id_cod_estado').parent('div').addClass('has-error'); // colocar class has-error de boostrap
+                    $('#id_cod_estado').select2('open')  
+                })
+            }else if (circuito == 0) { 
+                bootbox.alert("Debe seleccionar el Circuito al que pertenece", function() {
+                    $('#id_circuito').parent('div').addClass('has-error'); // colocar class has-error de boostrap
+                    $('#id_circuito').select2('open')  
+                })
+            }else if (municipio == 0) { 
+                bootbox.alert("Debe seleccionar el Municipio al que pertenece", function() {
+                    $('#id_cod_municipio').parent('div').addClass('has-error'); // colocar class has-error de boostrap
+                    $('#id_cod_municipio').select2('open')  
+                })
+            }
+			
+			
+            else{
+                url = '/listarcandidato/'+id+'/'+grupo+'/'+sexo+'/'+estado+'/'+circuito+'/'+municipio+'/'
+                window.location = url
+			}
+        });
+    
+        $('#limpiar').click(function(){
+    		$('select').select2('val',0).removeClass('has-error')
+    		$('input[type="text"],textarea').val('')	
+	    });
+            
+        
+        
+     });
+     
+     
+</script>
+
+
+<div style="text-align: center">
+    <fieldset><legend class="titulo">Bienvenido a Exit Poll Efectua tu Voto</legend></fieldset>
+    
+        <div style="width: 50%;margin: auto" class="panel panel-primary" >
+            <div  class="panel-heading">
+                  <label class="titulo">Seleccione el Exit Poll</label>
+            </div>
+            <div class="panel-body" style="font-weight: bold; ">
+                <div class="col-xs-3" ><label class="subtitulo">Edad:&nbsp;</label></div>
+                <div class="form-group col-xs-9">
+					<select class="form-control input-sm" style="width:100%;font-size: 13px" id="id_grupo_etareo" name="grupo_etareo">
+						<option value="0">Seleccione</option>
+						{% for n in edad %}
+						<option value="{{n}}">{{ n }} Años</option>
+						{% endfor %}
+					</select>
+                </div>
+                <br/>
+                <br/>
+                <br/>
+                <div class="col-xs-3" ><label class="subtitulo">Sexo:&nbsp;</label></div>
+					<div class="form-group col-xs-4">
+						<label>Femenino:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
+						<input type="radio" id="id_sexo1" name="sexo" value="1"/>
+					</div>
+					<div class="form-group col-xs-4">
+						<label>Masculino:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
+						<input type="radio" id="id_sexo2" name="sexo" value="2"/>
+					</div>
+                <br/>
+                <br/>
+                <br/>
+
+				
+				<div class="col-xs-3" ><label class="subtitulo">Elección:</label></div>
+				<div class="form-group col-xs-9">
+					<select class="form-control input-sm" style="width:100%;font-size: 13px" id="exit_poll">
+						<option value="0">Seleccione</option>
+						{% for n in listar %}
+						<option value="{{n.id}}">{{ n.nombre }}</option>
+						{% endfor %}
+					</select>
+				</div>
+				
+				<div id="div_estado" hidden="hidden">
+					<br/>
+					<br/>
+					<br/>
+					<div class="col-xs-3" ><label class="subtitulo">Estados:&nbsp;</label></div>
+					<div class="form-group col-xs-9">
+						<select style="width:100%;" class="form-control input-sm" id="id_cod_estado" name="estado" required=True>
+							<option value="0">Seleccione</option>
+							{% for e in list_estados %}
+							<option value="{{e.cod_estado}}">{{ e.estado }}</option>
+							{% endfor %}
+						</select>
+					</div>
+				</div>
+				
+				<div id="div_circuito" hidden="hidden">
+					<br/>
+					<br/>
+					<br/>
+					<div class="col-xs-3" ><label class="subtitulo">Circuitos:&nbsp;</label></div>
+					<div class="form-group col-xs-9">
+						<select style="width:100%;" id="id_circuito" name="circuito">
+							<option value="0" selected="selected">Seleccione</option>
+						</select>
+					</div>
+				</div>
+				
+				<div id="div_municipio" hidden="hidden">
+					<br/>
+					<br/>
+					<br/>
+					<div class="col-xs-3" ><label class="subtitulo">Municipios:&nbsp;</label></div>
+					<div class="form-group col-xs-9">
+						<select style="width:100%;" id="id_cod_municipio" name="municipio">
+							<option value="0" selected="selected">Seleccione</option>
+						</select>
+					</div>                        
+				</div>
+                
+            </div>
+            
+            <div  class="row">
+               <button role="button" id="enviar" style="font-weight: bold" class="btn btn-primary">
+                    <span class="glyphicon glyphicon-list-alt"></span>&nbsp;Cargar Tarjeton
+               </button>
+               <button type="reset" id="limpiar" style="font-weight: bold" class="btn btn-success" />
+                    <span class="glyphicon glyphicon-retweet"></span>&nbsp;Limpiar
+               </button>
+            </div>
+            </Br>
+            
+        </div>
+   </div>
+{% endblock %}
+
+
+

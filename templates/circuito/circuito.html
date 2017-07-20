@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+{% extends 'base.html' %}
+
+{% block contenido %}
+<html>
+<head>
+    <title>Registrar Circuito</title>
+</head>
+<script type="text/javascript">
+$(document).ready(function(){
+    $("#id_cod_estado").select2();
+    $('#id_n_circuito').numeric(); //Valida solo valores tipo texto
+    $('#id_num_max_candidatos').numeric(); //Valida solo valores tipo texto
+    $('#registrar').click(function(e){ //Valida al guardar que el rago no sea menor 5 caracteres
+	e.preventDefault();
+	
+	$('input').on({
+	    keypress: function() {
+		$(this).parent('div').removeClass('has-error');
+	    }
+	});
+	
+	var estado = $('#id_cod_estado').find('option').filter(':selected').val()
+	// REINICIAR LOS COLORES
+	$('#id_n_circuito').css('border','');
+	$('#id_num_max_candidatos').css('border','');
+
+	if (estado == 0) {
+	    bootbox.alert('Disculpe, Debe Seleccionar el Estado', function() {	    
+		$('#id_cod_estado').select2('open');
+	    });
+	}
+	else if (($('#id_n_circuito').val() == '')) {
+	    bootbox.alert('Disculpe, Debe Colocar el Número de Circuito', function() {	    
+		$('#id_n_circuito').parent('div').addClass('has-error');
+	    });
+	}
+	else if (($('#id_num_max_candidatos').val() == '')) {
+	    bootbox.alert('Disculpe, Debe Colocar el Número de Candidatos', function() {	    
+		$('#id_num_max_candidatos').parent('div').addClass('has-error');
+	    });
+	}
+        else {
+            $.post('',$('#form_circuito').serialize()+'&bandera=true',function(response){
+		if (response == 'existe') {
+		    bootbox.alert('Disculpe, Este Circuito Ya Existe Asociado a este Estado', function() {	    
+		    });
+		}else{
+		    $('#form_circuito').submit(); 
+		}
+	    });
+        }
+    });
+    $('#volver').click(function(){
+        url = '/configuraciones/circuitos/'
+        window.location = url
+    })
+    $('#limpiar').click(function(){
+        $('#id_cod_estado').select2('val', '0');
+    })
+});
+</script>
+{% load templatag_grupos %}
+{% ifusergroup Topologia %}  
+<body>
+    <form id="form_circuito" method="post">
+	{% csrf_token %}
+	<br/>
+	<br/>
+   
+	<div style="width: 80%" class="panel panel-primary">
+        <div class="panel-heading">
+            <label class="panel-title">Registrar Circuito</label>
+	    </div>
+	    <br/>
+	    <fieldset><legend class="titulo">Datos del Circuito</legend></fieldset>
+        <br/>
+	    <div class="panel-body">
+            <div class="col-xs-2" >Estado</div>
+            <div class="col-xs-3" >
+				<select id="id_cod_estado" class="form-control select2 input-sm" name="estado">
+				<option value="0">--------------------</option>
+				{% for e in list_e %}
+					<option value='{{e.cod_estado}}'>{{ e.estado }}</option>
+				{% endfor %}
+				</select>    
+			</div>
+			<div class="col-xs-3" >Número del Circuito</div>
+			<div class="col-xs-4">
+				<input id="id_n_circuito" name="n_circuito" maxlength="2" placeholder="Ej: 7" type="text" />
+			</div>
+        </div>
+            
+	    <div class="panel-body">
+			<div class="col-xs-2">&nbsp;</div>
+			<div class="col-xs-4" >Número de Candidatos por Circuito</div>
+			<div class="col-xs-4">
+				<input id="id_num_max_candidatos" maxlength="2" style="font-weight: bold" placeholder="Ej: 12" max=99 name="num_max_candidatos" type="text" />
+			</div>
+			<div class="col-xs-2">&nbsp;</div>
+        </div>
+	    </br>
+        <div class="row" style="text-align: center">
+			<button type="button" id="volver" style="font-weight: bold;font-size: 13px" class="btn btn-warning " >
+				&nbsp;<span class="glyphicon glyphicon-chevron-left"></span>&nbsp;Volver
+			</button>
+			<button type="submit" id="registrar" style="font-weight: bold;font-size: 13px" class="btn btn-info"/>
+				&nbsp;<span class="glyphicon glyphicon-floppy-disk"></span>&nbsp;Registrar
+			</button>
+			<button type="reset" id="limpiar" style="font-weight: bold;font-size: 13px" class="btn btn-success"/>
+				&nbsp;<span class="glyphicon glyphicon-retweet"></span>&nbsp;&nbsp;Limpiar
+			</button>
+	    </div>
+		<input id='user_create' type="hidden" name='user_create' value='{{ user.id }}'
+		
+		</br>
+		</br>
+
+    </div>
+	{% else %}
+	<p style="color: #FF0000; font-size: 18px">Disculpe No esta autorizado para esa área.</p>
+	{% endifusergroup %}
+    </form>
+</body>
+
+</html>
+{% endblock %}

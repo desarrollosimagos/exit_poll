@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+
+{% block scriptgrouping %}
+    
+    <script src="{{STATIC_URL}}js/jquery.dataTable.rowsGrouping.js"></script>
+{% endblock %}
+
+{% block contenido %}
+
+{% load templatag_grupos %}
+{% ifusergroup Registro %}
+<script>
+$(document).ready(function(){
+    var TUbch = $('#tab_exit_poll').dataTable({
+        "iDisplayLength": 15,
+        "iDisplayStart": 0,
+        "sPaginationType": "full_numbers",
+        "aLengthMenu": [15, 30, 45, 60],
+        "oLanguage": {"sUrl": "/static/js/es.txt"},
+        "aoColumns": [
+            {"sClass": "registro center", "sWidth": "15%"},
+            {"sClass": "registro center", "sWidth": "15%"},
+            {"sClass": "registro center", "sWidth": "15%"},
+            {"sClass": "registro center", "sWidth": "15%"},
+            {"sClass": "registro center", "sWidth": "15%"},
+            {"sClass": "registro center", "sWidth": "10%"},
+            {"sClass": "registro center", "sWidth": "10%"},
+            {"sClass": "registro center", "sWidth": "10%"},
+            {"sClass": "registro center", "sWidth": "10%"},
+            //{"sWidth": "3%", "bSortable": false, "sClass": "center sorting_false", "bSearchable": false},
+            {"sWidth": "3%", "bSortable": false, "sClass": "center sorting_false", "bSearchable": false},
+        ]
+    }).rowGrouping({
+        iGroupingColumnIndex: 1,
+        bExpandableGrouping: true,
+        bExpandSingleGroup: false,
+        iExpandGroupOffset: -1,
+        asExpandedGroups: [""]
+        })
+    
+    
+    $('#enviar').click(function(){
+        url = '/exitpoll/registrarexitpoll/'
+        window.location = url
+    })
+});
+</script>
+
+<style>
+.rowCount-grid {
+    float: right; font-size: 15px; color: red; padding-right: 250px;
+    }
+    tr:hover th, tr:hover td {
+        background-color: #D9EDF7; background-image: none;
+    }
+    td {
+        height: 26px; padding: 0px 0px 0px 20px !important; text-align: left; border-bottom: 1px solid #d0d0d0; vertical-align: middle; color: #555555; background-color: #ffffff;
+    }
+    td.group {
+        background-color: #FFFFFF !important; border-bottom: 1px solid #94bafd; border-top: 1px solid #94bafd;
+    }
+    td.expanded-group {
+        background: url("/static/css/imagenes/minus.jpg") no-repeat scroll left center transparent;
+        }
+    tr:hover td.expanded-group {
+        background: url("/static/css/imagenes/minus.jpg") no-repeat scroll left center #D9EDF7 !important;
+    }
+    td.collapsed-group {
+        background: url("/static/css/imagenes/plus.jpg") no-repeat scroll left center transparent;
+    }
+    tr:hover td.collapsed-group {
+        background: url("/static/css/imagenes/plus.jpg") no-repeat scroll left center #D9EDF7 !important;
+    }
+    .DataTables_sort_wrapper span {
+            float: right;
+    }
+    </style>
+
+
+<div style="width:95%">
+     
+    <button role="button" class="btn btn-primary" style="font-weight: bold;font-size: 13px" id="enviar" >
+        &nbsp;<span class="glyphicon glyphicon-plus"></span>&nbsp;Agregar ExitPoll
+    </button>
+    
+    <br/>
+    <br/>
+  <table style="width:100%;" border="0" align="center" cellspacing="1" id="tab_exit_poll" align="center"
+           class="table table-bordered table-striped table-hover table-condensed table-responsive">
+    <thead style="font-size: 16px">
+        <tr class="info">
+            <th style='text-align: center' colspan="10">Listado de Exit Poll</th>
+        </tr>
+        <tr class="info">
+            <th style='text-align: center'>Ítem</th>
+            <th style='text-align: center'>Elección</th>
+            <th style='text-align: center'>Candidatos</th>
+            <th style='text-align: center'>Estado</th>
+            <th style='text-align: center'>Municipio</th>
+            <th style='text-align: center'>Parroquia</th>
+            <th style='text-align: center'>Circuito</th>
+            <th style='text-align: center'>Sector</th>
+            <th style='text-align: center'>Poligonal</th>
+            <th style='text-align: center'>Eliminar</th>
+        </tr>
+ 
+    </thead>
+
+    <tbody>
+        
+        {% for rows in listar_exitpoll %}
+        <tr style="font-size: 14px" class="{% cycle 'impar' 'par' %}">
+            <td>
+                {{ forloop.counter }}
+            </td>
+            <td>
+               {{rows.exitpoll}}
+            </td>
+            <td>
+               {{rows.nombres}}
+            </td>
+            <td>
+               {{rows.estado}}
+            </td>
+            <td>
+                {{rows.municipio}}
+            </td>
+            <td>
+                {{rows.parroquia}}
+            </td>
+            <td>
+               {{rows.circuito}}
+            </td>
+            <td>
+                {{rows.sector}}
+            </td>
+            <td>
+                {{rows.poligonal}}
+            </td>
+            <td style='text-align: center'>
+                <a href="{% url "borrar_exitpoll" rows.id %}"><img style="width:15px;height: 15px;text-align: left" src="{{ STATIC_URL }}img/borrar.png"/></a>
+            </td>
+
+           
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+</div>
+{% else %}
+<p style="color: #FF0000; font-size: 18px">Disculpe No esta autorizado para esa área.</p>
+{% endifusergroup %}
+{% endblock %}

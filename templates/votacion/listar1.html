@@ -1,0 +1,58 @@
+
+<div style="width: 50%" class="panel panel-primary" >
+        <div style= align:"center" class="panel-heading">
+              <label class="titulo">Votar</label>
+	</div>
+       
+        
+        <div align="center"class="panel-body" style="font-weight: bold">
+            <div class="col-xs-3" ><label class="subtitulo">Elección:</label></div>
+            <div class="form-group col-xs-9">
+                <select class="form-control input-sm" style="width:100%;font-size: 16px" id="exit_poll">
+                    <option value="0">Seleccione</option>
+                    {% for n in listar %}
+                    <option value="{{n.id}}">{{ n.nombre }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        
+        <div align="center" class="row">
+            <button role="button" id="enviar" class="btn btn-warning">Cargar Tarjeton</button>
+            <input type="reset" id="limpiar" style="font-weight: bold" class="btn btn-success" value="Limpiar"/>
+          <!--  <input style="font-weight: bold" type="button" id="volver" class="btn btn-warning" value="Volver"/>-->
+        </div>
+        </Br>
+        
+    </div>
+
+
+
+
+<table border="1" align="center">
+    <thead>
+        <tr>
+            <th>Candidato</th>
+          
+        </tr>
+    </thead>
+    <tbody>    
+        <tr>
+            {% for m in listar_votacion %}
+            <tr class="{% cycle 'impar' 'par' %}">
+                <td>
+                    {{m.candidatos.candidatos.nombre}}"
+                </td>
+                
+            </tr>
+            {% empty %}
+            <tr>
+                <td>
+                    No hay Categorias registrados aún.
+                </td>
+            </tr>
+            {% endfor %}
+        </tr>
+    </tbody>
+</table>
+{{listar_votacion }}

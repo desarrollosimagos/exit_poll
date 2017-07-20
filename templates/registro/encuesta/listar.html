@@ -1,0 +1,267 @@
+{% extends 'base2.html' %}
+{% block contenido %}
+{% load templatag_grupos %}
+{% ifusergroup Registro %}
+<script type="text/javascript">
+
+$(document).ready(function(){
+    var TUbch = $('#tab_encuestas').dataTable({
+        "iDisplayLength": 10,
+        "iDisplayStart": 0,
+        "sPaginationType": "full_numbers",
+        "aLengthMenu": [10, 15, 20],
+        "oLanguage": {"sUrl": "/static/js/es.txt"},
+        "aoColumns": [
+            {"sClass": "registro center", "sWidth": "2%"},
+            {"sClass": "registro center", "sWidth": "2%"},
+			{"sClass": "registro center", "sWidth": "2%"},
+            {"sClass": "registro center", "sWidth": "50%"},
+			{"sClass": "registro center", "sWidth": "30%"},
+            {"sWidth": "1%", "bSortable": false, "sClass": "center", "bSearchable": false},
+			{"sWidth": "1%", "bSortable": false, "sClass": "center", "bSearchable": false},
+            {"sWidth": "1%", "bSortable": false, "sClass": "center", "bSearchable": false},
+			{"sWidth": "1%", "bSortable": false, "sClass": "center", "bSearchable": false},
+        ],
+	order: [ 0, 'asc' ],
+
+    });
+    $('#enviar').click(function(){
+        url = '/encuestas/registrarencuesta/'
+        window.location = url
+    })
+    var editor;
+    
+    $('.borrarencuesta').click(function(e){
+	var id = $(this).attr('id')
+	var padre      = $(this).closest('tr');
+	var nRow       = padre[0];
+	e.preventDefault()
+	bootbox.confirm({
+	    title: 'Elminar Encuesta',
+	    message: '¿Disculpe, Desea eliminar la Encuesta?',
+	    buttons: {
+		'cancel': {
+		    label: 'NO',
+		    className: 'btn-danger'
+		},
+		'confirm': {
+		    label: 'SI',
+		    className: 'btn-info'
+		}
+	    },
+		callback: function(result) {
+			if (result == false) {
+			
+			}else{
+			$.post('/encuestas/borrarencuesta/',{'csrfmiddlewaretoken': "{{ csrf_token }}",'id': id},function(response){
+				if (response['delete'] == 'ok') {
+					TUbch.fnDeleteRow(nRow);
+					bootbox.alert("Eliminación Exitosa", function() {
+						});
+				}
+				},'json')
+			}
+		}
+	}); 
+	
+    });
+    
+    $('.finalizar').click(function(e){
+	var id = $(this).attr('id')
+	var padre      = $(this).closest('tr');
+	var nRow       = padre[0];
+	e.preventDefault()
+	bootbox.confirm({
+		title: 'Aplicar Encuesta',
+		message: '¿Disculpe, Está Seguro de empezar a Aplicar está Encuesta?. Una vez pase al proceso de Aplicación no podrá hacer cambios tanto a sus preguntas como a sus respuestas.',
+		buttons: {
+		    'cancel': {
+			label: 'NO',
+			className: 'btn-danger'
+		    },
+		    'confirm': {
+			label: 'SI',
+			className: 'btn-info'
+		    }
+		},
+		    callback: function(result) {
+			    if (result == false) {
+			    
+			    }else{
+			    $.post('/encuestas/finalizar/',{'csrfmiddlewaretoken': "{{ csrf_token }}",'id': id},function(response){
+				    if (response['update'] == 'ok') {
+					    bootbox.alert("Encuesta finalizada con exito", function() {
+						    location.reload();
+						    });
+				    }else{
+						bootbox.alert("No se a podido Finalizar la encuesta debido a que no ha registrado preguntas a ella.", function() {
+						    location.reload();
+						});
+					}
+				    },'json')
+			    }
+		    }
+	}); 
+			
+    });
+    
+    $('.cerrar').click(function(e){
+	var id = $(this).attr('id')
+	var padre      = $(this).closest('tr');
+	var nRow       = padre[0];
+	e.preventDefault()
+	bootbox.confirm({
+		title: 'Cerrar Encuesta',
+		message: '¿Disculpe, Está Seguro de Cerrar está Encuesta?. Una vez cerrada no estará disponible para sus aplicación ',
+		buttons: {
+		    'cancel': {
+			label: 'NO',
+			className: 'btn-danger'
+		    },
+		    'confirm': {
+			label: 'SI',
+			className: 'btn-info'
+		    }
+		},
+		    callback: function(result) {
+			    if (result == false) {
+			    
+			    }else{
+			    $.post('/encuestas/cerrar/',{'csrfmiddlewaretoken': "{{ csrf_token }}",'id': id},function(response){
+
+				    if (response['update'] == 'ok') {
+					    bootbox.alert("Encuesta cerrada con exito", function() {
+						    location.reload();
+						    });
+				    }
+				    },'json')
+			    }
+		    }
+	}); 
+			
+    });
+    
+    
+	
+	$('.verencuesta').click(function(e){
+		var encuesta = $(this).attr('id')
+		url = '/encuestas/verencuesta/'+encuesta
+		window.open(url)
+    });
+	
+    
+});
+    
+</script>
+
+<div style="width:80%">
+    <button role="button" class="btn btn-primary" style="font-weight:bold;font-size: 13px" id="enviar" >
+        &nbsp;<span class="glyphicon glyphicon-plus"></span>&nbsp;Agregar Encuesta
+    </button>
+    <br/>
+    <br/>
+	
+    <table style="width:100%;" border="0" align="center" cellspacing="1" id="tab_encuestas" align="center"
+           class="table table-bordered table-striped table-hover table-condensed dt-responsive table-responsive display">
+        <thead style="font-size: 13px">
+            <tr class="info">
+                <th style='text-align: center' colspan="9">Encuestas Registradas</th>
+            </tr>
+            <tr class="info">
+                <th style='text-align: center'>Ítem</th>
+                <th style='text-align: center'>Estatus</th>
+				<th style='text-align: center'>Tipo</th>
+                <th style='text-align: center'>Nombre de la Encuesta</th>
+				<th style='text-align: center'>Url</th>
+				<th style='text-align: center'>Visualizar</th>
+                <th style='text-align: center'>Editar</th>
+                <th style='text-align: center'>Borrar</th>
+				<th style='text-align: center'>Acción</th>
+            </tr>
+        </thead>
+        <tbody>
+			{% for m in listar_encuestas %}
+			<tr style="font-size: 13px;text-align: center" class="{% cycle 'impar' 'par' %}">
+				<td>
+					{{ forloop.counter }}
+				</td>
+				<td>
+					{%if m.estatus == '1' %}
+					    <label style="color: red">Borrador</label> 
+					{% elif m.estatus == '2' %}
+					    <label style="color: blue">Activa</label>
+					{% else %}
+					    <label style="color: green">Cerrada</label>
+					{% endif %}
+				</td>
+				<td>
+					{%if m.tipo == '1' %}
+					    <label style="color: #017F09">Web</label>
+					{% elif m.tipo == '2' %}
+					    <label style="color: blue">Movíl</label>
+					{% else %}
+					    <label style="color: #000000">Web y Movíl</label>
+					{% endif %}
+				</td>
+				<td>
+					{{ m.nombre }}
+				</td>
+				<td style='text-align: center'>
+				    {%if m.estatus == '2' %}
+						<a href="http://www.exitpoll.org.ve/aplicada/encuesta_web/{{ m.id }}">http://www.exitpoll.org.ve/aplicada/encuesta_web/{{ m.id }}</a>
+				    {% else %}
+						No disponible
+				    {% endif %}	
+				</td>
+				<td>
+					<a  href="" >
+					    <img class="verencuesta" id="{{m.id}}" style="width:25px;height: 25px" src="{{ STATIC_URL }}img/ver.png"/>
+					</a>
+				</td>
+				<td style='text-align: center'>
+				    {%if m.estatus == '1' %}
+					<a href="{% url "editar_encuesta" m.id %}"  >
+					    <img style="width:30px;height: 30px" src="{{ STATIC_URL }}img/edit.png"/>
+					</a>
+				    {% else %}
+					<a style="cursor: default" href="#"  >
+					    <img style="width:30px;height: 30px" src="{{ STATIC_URL }}img/edit1.png"/>
+					</a>
+				    {% endif %}
+				</td>
+				<td style='text-align: center'>
+				    {%if m.estatus == '1' %}
+					<a  href="" >
+					    <img class="borrarencuesta" id="{{m.id}}" style="width:25px;height: 25px" src="{{ STATIC_URL }}img/borrar.png"/>
+					</a>
+				    {% else %}
+					<a href="#" style="cursor: default" >
+					    <img class="" id="{{m.id}}" style="width:25px;height: 25px" src="{{ STATIC_URL }}img/borrar1.png"/>
+					</a>
+				    {% endif %}	
+				</td>
+				<td>
+				    {%if m.estatus == '1' %}
+					<a  href="" >
+					    <img class="finalizar" id="{{m.id}}" style="width:30px;height: 30px" src="{{ STATIC_URL }}img/up.png"/>
+					</a>
+				    {% elif m.estatus == '2' %}
+					<a  href="" >
+					    <img class="cerrar" id="{{m.id}}" style="width:30px;height: 30px" src="{{ STATIC_URL }}img/up3.png"/>
+					</a>
+				    {% else %}
+					<a href="#" style="cursor: default" >
+					    <img class="" id="{{m.id}}" style="width:30px;height: 30px" src="{{ STATIC_URL }}img/up2.png"/>
+					</a>
+				    {% endif %}
+				
+				</td>
+            </tr>
+                {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<p style="color: #FF0000; font-size: 18px">Disculpe No esta autorizado para esa área.</p>
+{% endifusergroup %}
+{% endblock %}

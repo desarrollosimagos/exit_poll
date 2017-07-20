@@ -1,0 +1,672 @@
+{% extends 'base.html' %}
+{% block contenido %}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <title>Total de Votos</title>
+</head>
+<script src="{{ STATIC_URL }}js/exporting.js"></script>
+<script src="{{ STATIC_URL }}js/drilldown.js"></script>
+<script type="text/javascript">
+    var chart;
+
+    $(document).ready(function(){
+		$('#id_tipo').change(function() {
+			var tipo = $(this).val();
+			if (tipo == 1) { //TODO
+				$('#id_cod_estado').select2('val', '0');
+				$('#id_cod_municipio,#id_circuito').find('option:gt(0)').remove().end().select2('val', '0');
+				$('#id_cod_estado,#id_circuito,#id_cod_municipio').prop('disabled',true)
+			}else if (tipo == 2) { //Por Estado
+				$('#id_cod_estado').select2('val', '0');
+				$('#id_cod_municipio,#id_circuito').prop('disabled',true)
+				$('#id_cod_municipio,#id_circuito').find('option:gt(0)').remove().end().select2('val', '0');
+				$('#id_cod_estado').prop('disabled',false)
+			}else if (tipo == 3) { //Por Circuito
+				$('#id_cod_municipio').prop('disabled',true)
+				$('#id_cod_estado,#id_circuito').prop('disabled',false)
+				$('#id_cod_estado').select2('val', '0');
+				$('#id_cod_municipio,#id_circuito').find('option:gt(0)').remove().end().select2('val', '0');
+			}else{ //Por Municipio
+				$('#id_cod_estado').select2('val', '0');
+				$('#id_cod_municipio,#id_circuito').find('option:gt(0)').remove().end().select2('val', '0');
+				$('#id_cod_estado,#id_cod_municipio').prop('disabled',false)
+				$('#id_circuito').prop('disabled',true)
+				
+			}
+		});
+        $('#exportar').click(function(){
+            var exitpoll = $('#exit_poll').find('option').filter(':selected').val()
+			var tipo = $('#id_tipo').find('option').filter(':selected').val()
+			var estado = $('#id_cod_estado').find('option').filter(':selected').val()
+			var municipio = $('#id_cod_municipio').find('option').filter(':selected').val()
+			var circuito = $('#id_circuito').find('option').filter(':selected').val()
+			
+            if (exitpoll == 0) {
+                bootbox.alert('Debe Seleccionar la Elección para poder exportar el PDF', function() {	    
+					$('#exit_poll').select2('open');
+				});
+            }else if (tipo == 0) {
+                bootbox.alert('Debe Seleccionar tipo de reporte para poder exportar el PDF', function() {	    
+					$('#id_tipo').select2('open');
+				});
+            }else{
+                url = 'exitpoll/?tipo='+tipo+'&exitpoll='+exitpoll
+				if (tipo == 1) {
+					url = url
+				}else if (tipo == 2){
+					url += '&estado='+estado
+				}else if (tipo == 3){
+					url += '&circuito='+circuito
+				}else{
+					url += '&municipio='+municipio
+				}
+                window.open(url); 
+            }
+        });
+        
+        $('#exportar_grupo').click(function(){
+            var grupo = $('#exit_poll').find('option').filter(':selected').val()
+			var tipo = $('#id_tipo').find('option').filter(':selected').val()
+			var estado = $('#id_cod_estado').find('option').filter(':selected').val()
+			var municipio = $('#id_cod_municipio').find('option').filter(':selected').val()
+			var circuito = $('#id_circuito').find('option').filter(':selected').val()
+			
+            if (grupo == 0) { 
+						bootbox.alert('Debe Seleccionar la Elección para poder exportar el PDF', function() {	    
+				$('#exit_poll').select2('open');
+				});
+            }else if (tipo == 0) {
+                bootbox.alert('Debe Seleccionar tipo de reporte para poder exportar el PDF', function() {	    
+					$('#id_tipo').select2('open');
+				});
+            }else{
+                url = 'exitpollgrupo/?tipo='+tipo+'&grupo='+grupo
+				if (tipo == 1) {
+					url = url
+				}else if (tipo == 2){
+					url += '&estado='+estado
+				}else if (tipo == 3){
+					url += '&circuito='+circuito
+				}else{
+					url += '&municipio='+municipio
+				}
+                window.open(url); 
+            }
+        });
+        $('#detallado').click(function(){
+            var detallado = $('#exit_poll').find('option').filter(':selected').val()
+			var tipo = $('#id_tipo').find('option').filter(':selected').val()
+			var estado = $('#id_cod_estado').find('option').filter(':selected').val()
+			var municipio = $('#id_cod_municipio').find('option').filter(':selected').val()
+			var circuito = $('#id_circuito').find('option').filter(':selected').val()
+			
+            if (detallado == 0) { 
+                bootbox.alert('Debe Seleccionar la Elección para poder exportar el PDF', function() {	    
+					$('#exit_poll').select2('open');
+				});
+            }else if (tipo == 0) {
+                bootbox.alert('Debe Seleccionar tipo de reporte para poder exportar el PDF', function() {	    
+					$('#id_tipo').select2('open');
+				});
+            }else{
+                url = 'exitpolldetallado/?tipo='+tipo+'&detallado='+detallado
+				if (tipo == 1) {
+					url = url
+				}else if (tipo == 2){
+					url += '&estado='+estado
+				}else if (tipo == 3){
+					url += '&circuito='+circuito
+				}else{
+					url += '&municipio='+municipio
+				}
+                window.open(url); 
+            }
+        });
+        $('#genero').click(function(){
+            var sexo = $('#exit_poll').find('option').filter(':selected').val()
+			var tipo = $('#id_tipo').find('option').filter(':selected').val()
+			var estado = $('#id_cod_estado').find('option').filter(':selected').val()
+			var municipio = $('#id_cod_municipio').find('option').filter(':selected').val()
+			var circuito = $('#id_circuito').find('option').filter(':selected').val()
+			
+            if (sexo == 0) { 
+                bootbox.alert('Debe Seleccionar la Elección para poder exportar el PDF', function() {	    
+					$('#exit_poll').select2('open');
+				});
+            }else if (tipo == 0) {
+                bootbox.alert('Debe Seleccionar tipo de reporte para poder exportar el PDF', function() {	    
+					$('#id_tipo').select2('open');
+				});
+            }else{
+                //URL = 'exitpollgenero/'+sexo
+                url = 'exitpollgenero/?tipo='+tipo+'&sexo='+sexo
+				if (tipo == 1) {
+					url = url
+				}else if (tipo == 2){
+					url += '&estado='+estado
+				}else if (tipo == 3){
+					url += '&circuito='+circuito
+				}else{
+					url += '&municipio='+municipio
+				}
+                window.open(url); 
+            }
+        });
+
+        var TUbch = $('#tab_resultados').dataTable({
+			"iDisplayLength": 25,
+			"iDisplayStart": 0,
+			"sPaginationType": "full_numbers",
+			"aLengthMenu": [25, 50, 75, 100],
+			"oLanguage": {"sUrl": "/static/js/es.txt"},
+			"aoColumns": [
+				{"sClass": "registro center", "sWidth": "20%"},
+				{"sClass": "registro center", "sWidth": "15%"},
+				{"sClass": "registro center", "sWidth": "15%"},
+			],
+			"footerCallback": function ( row, data, start, end, display ) {
+				var api = this.api();
+				// Remove the formatting to get integer data for summation
+				var intVal = function ( i ) {
+	 
+					return typeof i === 'string' ?
+						i.replace(/[\$,]/g, '')*1 :
+						typeof i === 'number' ?
+							i : 0;		 
+				};
+	  
+				// Total over all pages
+					if (api.column(2).data().length){
+					var total = api
+					.column( 2 )
+					.data()
+					.reduce( function (a, b) {
+					return intVal(a) + intVal(b);
+					} ) }
+					else{ total = 0};
+					 
+	  
+				// Total over this page
+				if (api.column(2).data().length){
+				var pageTotal = api
+					.column( 2, { page: 'current'} )
+					.data()
+					.reduce( function (a, b) {
+						return intVal(a) + intVal(b);
+					} ) }
+					else{ pageTotal = 0};
+	  
+				// Update footer
+				$( api.column(2).footer() ).html(
+					(pageTotal.toFixed(2))+' %'
+					
+				);
+				
+				// Total over all pages
+					if (api.column(1).data().length){
+					var total = api
+					.column( 1 )
+					.data()
+					.reduce( function (a, b) {
+					return intVal(a) + intVal(b);
+					} ) }
+					else{ total = 0};
+					 
+	  
+				// Total over this page
+				if (api.column(1).data().length){
+				var pageTotal = api
+					.column( 1, { page: 'current'} )
+					.data()
+					.reduce( function (a, b) {
+						return intVal(a) + intVal(b);
+					} ) }
+					else{ pageTotal = 0};
+	  
+				// Update footer
+				$( api.column(1).footer() ).html(
+					pageTotal+' votos'
+				);
+			}
+			
+		});
+
+        var chart; 
+        $("#exit_poll,#id_tipo,#id_cod_estado,#id_cod_municipio,#id_circuito").select2();
+        $('#enviar,#grupo,#sexo').click(function(){
+            var id_eleccion = $('#exit_poll').find('option').filter(':selected').val()
+            var titulo = ($('#exit_poll').find('option').filter(':selected').text())
+			var nom_est = ($('#id_cod_estado').find('option').filter(':selected').text())
+			var nom_mun = ($('#id_cod_municipio').find('option').filter(':selected').text())
+			var nom_cir = ($('#id_circuito').find('option').filter(':selected').text())
+			var tipo = $('#id_tipo').find('option').filter(':selected').val()
+			var estado = $('#id_cod_estado').find('option').filter(':selected').val()
+			var municipio = $('#id_cod_municipio').find('option').filter(':selected').val()
+			var circuito = $('#id_circuito').find('option').filter(':selected').val()
+			
+            var id = $(this).attr('id');
+            var bandera = 'candidato';
+            if (id == 'grupo') {
+                bandera = 'grupo';
+                $("#cab_candidatos").prop('hidden',true)
+                $("#cab_grupos").prop('hidden',false)
+                $("#cab_sexo").prop('hidden',true)
+            }
+            else if(id == 'sexo'){
+                bandera = 'sexo';
+                $("#cab_candidatos").prop('hidden',true)
+                $("#cab_grupos").prop('hidden',true)
+                $("#cab_sexo").prop('hidden',false)
+            }
+            else{
+                $("#cab_candidatos").prop('hidden',false)
+                $("#cab_grupos").prop('hidden',true)
+                $("#cab_sexo").prop('hidden',true)
+            }
+            
+            if (id_eleccion == 0) {
+                 bootbox.alert('Debe Seleccionar la Elección', function() {	    
+					$('#exit_poll').select2('open');
+				});
+            }else if (tipo == 0) {
+                bootbox.alert('Debe Seleccionar tipo de reporte para poder exportar el PDF', function() {	    
+					$('#id_tipo').select2('open');
+				});
+            }
+			else if (tipo == 2 && estado == 0 ) {
+				bootbox.alert('Debe Seleccionar el Estado', function() {	    
+					$('#id_cod_estado').select2('open');
+				});
+			}
+			else if (tipo == 3 && estado == 0 ) {
+				bootbox.alert('Debe Seleccionar el Estado', function() {	    
+					$('#id_cod_estado').select2('open');
+				});
+			}
+			else if (tipo == 3 && circuito == 0 ) {
+				bootbox.alert('Debe Seleccionar el Circuito', function() {	    
+					$('#id_circuito').select2('open');
+				});
+			}
+			else if (tipo == 4 && estado == 0 ) {
+				bootbox.alert('Debe Seleccionar el Estado', function() {	    
+					$('#id_cod_estado').select2('open');
+				});
+			}
+			else if (tipo == 4 && municipio == 0 ) {
+				bootbox.alert('Debe Seleccionar el Municipio', function() {	    
+					$('#id_cod_municipio').select2('open');
+				});
+			}
+            else {
+                TUbch.fnClearTable();
+				if (tipo == 1) {
+					sub_titulo = ""
+					var data_send = {'id_eleccion':id_eleccion,'csrfmiddlewaretoken': "{{ csrf_token }}",'bandera':bandera,'tipo':tipo }
+				}else if (tipo == 2){
+					sub_titulo = "(Estado: "+nom_est+")"
+					var data_send = {'id_eleccion':id_eleccion,'csrfmiddlewaretoken': "{{ csrf_token }}",'bandera':bandera,'tipo':tipo, 'estado':estado}
+				}else if (tipo == 3){
+
+					sub_titulo = "(Estado: "+nom_est+' - Circuito '+nom_cir+")"
+					var data_send = {'id_eleccion':id_eleccion,'csrfmiddlewaretoken': "{{ csrf_token }}",'bandera':bandera,'tipo':tipo, 'circuito':circuito }
+				}else{
+					sub_titulo = "(Estado: "+nom_est+' - Municipio: '+nom_mun+")"
+					var data_send = {'id_eleccion':id_eleccion,'csrfmiddlewaretoken': "{{ csrf_token }}",'bandera':bandera,'tipo':tipo, 'municipio':municipio }
+				}
+
+				$.post('',data_send, function(data) {
+
+					var lista_json = []
+                    var lista_json2 = []
+                    var total_vo = 0;
+                    $.each(data, function(i){
+                        cand = []
+                        total_vo += data[i].total    
+                    })
+                    var voto_cand = 0;
+                    $.each(data, function(i, obj){
+                        if (id == 'enviar') {
+                            cand = []
+                            cand[0] = data[i].candidatos__nombre+' '+data[i].candidatos__apellido
+                            cand[1] = data[i].total
+                            
+                            cand2 =[]
+                            cand2[0] = data[i].candidatos__nombre+' '+data[i].candidatos__apellido
+                            cand2[1] = parseFloat(((data[i].total * 100)/(total_vo)).toFixed(2));
+                            porcentaje = cand2[1]
+                            lista_json.push(cand);
+                            lista_json2.push(cand2);
+                            var newRow = TUbch.fnAddData([obj.candidatos__nombre+' '+obj.candidatos__apellido, obj.total,porcentaje]);
+                        }
+                        else if(id == 'grupo'){
+                            cand = []
+                            cand[0] = data[i].descripcion
+                            cand[1] = data[i].total
+							
+                            if (cand[1] == []) {
+								lista_json.push();
+								
+							}else{
+								lista_json.push(cand);
+							}
+
+                            cand2 =[]
+                            cand2[0] = data[i].descripcion
+                            cand2[1] = parseFloat(((data[i].total * 100)/(total_vo)).toFixed(2));
+                            porcentaje = cand2[1]
+                            if (cand2[1] == []) {
+								lista_json.push();
+								
+							}else{
+								lista_json2.push(cand2);
+								var newRow = TUbch.fnAddData([obj.descripcion, obj.total,porcentaje]);
+							}
+  
+                        }
+                        else {
+                            cand = [];
+
+                            if (data[i].sexo == '1'){
+                                cand[0] = 'Femenino'
+                            }
+                            else{
+                                cand[0] =('Masculino')
+                            }
+                            //cand[0] = data[i].sexo
+                            cand[1] = data[i].total
+                            
+                            cand2 =[]
+                            if (data[i].sexo == '1'){
+                                cand2[0] = 'Femenino'
+                            }
+                            else{
+                                cand2[0] =('Masculino')
+                            }
+                            //cand2[0] = data[i].sexo
+                            cand2[1] = parseFloat(((data[i].total * 100)/(total_vo)).toFixed(2));
+                            porcentaje = cand2[1]
+                            lista_json.push(cand);
+                            lista_json2.push(cand2);
+                            var newRow = TUbch.fnAddData([cand2[0], obj.total,porcentaje]);
+                        }
+                    })
+                    
+                    if (lista_json != '' ) {
+                        console.log(lista_json)
+                        $('#container1').highcharts({
+                        
+                            chart: {
+                                plotBackgroundColor: null,
+                                plotBorderWidth: null,
+                                plotShadow: false,
+                            },
+                            title: {
+                                text: titulo,
+                            },
+							subtitle: {
+                                text: sub_titulo
+                            },
+                            tooltip: {
+                                pointFormat: '{series.name}: <b>{point.percentage:.2f}%</b>'
+                            },
+                            plotOptions: {
+                                pie: {
+                                    allowPointSelect: true,
+                                    cursor: 'pointer',
+                                    dataLabels: {
+                                        enabled: true,
+                                        format: '<b>Votos</b>: (<span style="color:#FF0000">{point.y}</span>)  {point.percentage:.2f} %',
+                                        style: {
+                                            color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
+                                            }
+                                    },
+                                    
+                                    showInLegend: true
+                                }
+                            },
+                            series: [{
+                                type: 'pie',
+                                name: 'Porcentaje de Votos',
+                                data: lista_json,
+                            }]
+                        });
+                        console.log(lista_json2)
+                        $('#container2').highcharts({
+                            chart: {
+                                type: 'column'
+                            },
+                            title: {
+                                text: titulo,
+                            },
+                            subtitle: {
+                                text: sub_titulo
+                            },
+                            xAxis: {
+                                type: 'category'
+                            },
+                            yAxis: {
+                                title: {
+                                    text: ''
+                                    //texto lateral                                    
+                                }
+                            },
+                            legend: {
+                                enabled: false
+                            },
+                            plotOptions: {
+                                series: {
+                                    borderWidth: 0,
+                                    dataLabels: {
+                                        enabled: true,
+                                        format: '<span style="color:#FF0000">{point.y}</span> %',
+                                    }
+                                }
+                            },
+                            tooltip: {
+                                headerFormat: '<span style="font-size:11px">{series.name}</span><br>',
+                                pointFormat: '<span style="color:{point.color}">{point.name}</span>: <b>{point.y:.2f}%</b><br/>'
+                            },
+            
+                            series: [{
+                                name: 'Brands',
+                                colorByPoint: true,
+                                data: lista_json2,
+                            }], 
+                        });
+                    }
+                    else{
+                        bootbox.alert('Disculpe aun no hay registros para esta elección', function() {	    
+                            $('#container1,#container2').html('')
+                        });
+
+                    }
+                },'json');
+                
+            }
+        })
+     })
+</script>
+
+
+
+<body>
+    <center><h3>Generación de Gráficos por Elección</h3></center>
+
+    <div style="width: 90%;" style="text-align: center" class="panel panel-primary">
+        <div class="panel-heading">
+            Seleccione Elección a Consultar
+        </div>
+		
+        <div class="panel-body" style="text-align: left;font-weight: bold">
+			<fieldset><legend class="titulo">Seleccione la Elección</legend></fieldset>
+			<br/>
+            <div class="col-xs-1">
+				Elección:
+            </div>
+            <div class="col-xs-11">
+                <select class="form-control select2 input-sm " style="width:100%;" id="exit_poll" name="exit_poll">
+                    <option value="0">Seleccione</option>
+                    {% for n in listar %}
+                    <option value="{{n.id}}">{{ n.nombre }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+		
+		<div class="panel-body" style="text-align: left;font-weight: bold">
+			<fieldset><legend class="titulo">Seleccione el Tipo de Consulta</legend></fieldset>
+			<br/>
+			<div class="col-xs-1">
+				Tipo:
+            </div>
+            <div class="col-xs-5">
+				<select style="width: 100%;font-weight:bold;font-size: 13px" id="id_tipo" >
+					<option value='0'>Seleccione</option>
+					<option value='1'>General</option>
+					<option value='2'>Por Estado</option>
+					<option value='3'>Por Circuito</option>
+					<option value='4'>Por Municipio</option>
+				</select>
+			</div>
+		</div>
+		
+		<div class="panel-body" id="div_topologia" style="text-align: left;font-weight: bold">
+			<fieldset><legend class="titulo">Seleccione la Topología de acuerdo al tipo de consulta que seleccionó</legend></fieldset>
+			<br/>
+			<div class="col-xs-1" ><label>Estados:</label></div>
+			<div class="col-xs-5">
+				<select style="width:100%;" class="form-control input-sm" id="id_cod_estado" name="estado" required=True>
+					<option value="0">Seleccione</option>
+					{% for e in list_estados %}
+					<option value="{{e.cod_estado}}">{{ e.estado }}</option>
+					{% endfor %}
+				</select>
+			</div>
+			<div class="col-xs-1" ><label >Circuitos:&nbsp;</label></div>
+			<div class="col-xs-5">
+				<select style="width:100%;" id="id_circuito" name="circuito">
+					<option value="0" selected="selected">Seleccione</option>
+				</select>
+			</div>  
+		</div>
+		
+		<div class="panel-body" id="div_topologia" style="text-align: left;font-weight: bold">
+		<div class="col-xs-1" ><label>Municipios:&nbsp;</label></div>
+			<div class="col-xs-5">
+				<select style="width:100%;" id="id_cod_municipio" name="municipio">
+					<option value="0" selected="selected">Seleccione</option>
+				</select>
+			</div>  
+		</div>
+		
+        <br/>
+        <div class="row" style="text-align: left;font-weight: bold;width: 95%">
+			<label>Consultar por:&nbsp;&nbsp;&nbsp;&nbsp</label>
+            <button role="button" id="enviar" style="font-weight: bold;"  class="btn btn-primary">
+                 &nbsp;&nbsp;<span class="glyphicon glyphicon-stats"></span>&nbsp;Candidatos&nbsp;&nbsp;
+			</button>
+			<button role="button" id="exportar" style="font-weight: bold;"  class="btn btn-primary">
+				&nbsp;&nbsp;<span class="glyphicon glyphicon-file"></span>&nbsp;PDF Votos por Candidatos &nbsp;&nbsp;
+			</button>
+        </div>
+		
+        <br/>
+        <div class="row" style="text-align: left;font-weight: bold;width: 95%">
+			<label>Consultar por:&nbsp;&nbsp;&nbsp;&nbsp</label>
+			<button role="button" id="grupo" style="font-weight: bold;" class="btn btn-success">
+				<span class="glyphicon glyphicon-stats"></span>&nbsp;Grupo Etáreo&nbsp;
+			</button>
+			<button role="button" id="exportar_grupo" style="font-weight: bold;"  class="btn btn-success">
+				<span class="glyphicon glyphicon-file"></span>&nbsp;PDF Votos por Grupo Etáreo
+			</button>
+        </div>
+
+        <br/>
+        <div class="row" style="text-align: left;font-weight: bold;width: 95%">
+			<label>Consultar por:&nbsp;&nbsp;&nbsp;&nbsp</label>
+            <button role="button" id="sexo" style="font-weight: bold;"  class="btn btn-info">
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="glyphicon glyphicon-stats"></span>&nbsp;&nbsp;Género&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+			</button>
+            <button role="button" id="genero" style="font-weight: bold;"  class="btn btn-info">
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="glyphicon glyphicon-file"></span>&nbsp;PDF Votos por Género&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+			</button>
+        </div>
+		<br/>
+		<div class="row" style="text-align: left;width: 95%">
+			<label>Consultar por:&nbsp;&nbsp;&nbsp;&nbsp</label>
+			<button role="button" id="detallado" style="font-weight: bold;"  class="btn btn-warning">
+				<span class="glyphicon glyphicon-file"></span>&nbsp;PDF Detallado
+			</button>
+		</div>
+        <br/>
+        <br/>
+
+        
+    </div>
+    <div id="id_graficas" style="width: 90%">
+        <div style="float: left;width: 50%;">
+            <div id="container1" style="min-width: 310px; height: 400px; max-width: 600px; margin: 0 auto"></div>
+            
+        </div>
+        <div style="float: left;width: 50%;">
+            <div id="container2" style="min-width: 310px; height: 400px; max-width: 600px; margin: 0 auto"></div>
+        </div>
+    </div>
+    <div style="width: 50%">
+        <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>
+    </div>
+    
+    <div style="width: 89%">
+        <table style="width:100%;" border="1" align="center" cellspacing="1" id="tab_resultados" align="center"
+               class="table table-bordered table-striped table-hover table-condensed dt-responsive table-responsive">
+            <thead id="cab_candidatos">
+                <tr style="font-size: 16px">
+                    <th colspan=3 style="text-align: center">Cantidad de Votos por Candidato</th>
+                </tr>
+                <tr  style="font-size: 16px">
+                    <th style="text-align: center">Nombre y Apellido</th>
+                    <th style="text-align: center">Total de Votos</th>
+                    <th style="text-align: center">Porcentaje (%)</th>
+                </tr>
+            </thead>
+            <thead id="cab_grupos" hidden="hidden">
+                <tr style="font-size: 16px">
+                    <th colspan=3 style="text-align: center">Cantidad de Votos por Grupo Etáreo</th>
+                </tr>
+                <tr style="font-size: 16px">
+                    <th style="text-align: center">Grupo Etáreo</th>
+                    <th style="text-align: center">Total de Votos</th>
+                    <th style="text-align: center">Porcentaje (%)</th>
+                </tr>
+            </thead>
+            <thead id="cab_sexo" hidden="hidden">
+                <tr style="font-size: 16px">
+                    <th colspan=3 style="text-align: center">Cantidad de Votos por Género</th>
+                </tr>
+                <tr  style="font-size: 16px">
+                    <th style="text-align: center">Género</th>
+                    <th style="text-align: center">Total de Votos</th>
+                    <th style="text-align: center">Porcentaje (%)</th>
+                </tr>
+            </thead>
+            <tbody>    
+            </tbody>
+            <tfoot>
+                <td>TOTAL</td>
+                <td></td>
+                <td></td>
+            </tfoot>
+        </table>
+    </div>
+    
+</body>
+</html>
+
+{% endblock %}
+
+
+

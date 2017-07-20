@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+        <title>{% block titulo %} Exit Poll {% endblock %}</title>
+        <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}css/bootstrap.css">
+        <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}css/bootstrap-theme.css">
+        <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}css/estilo.css"/>
+        
+        <script src="{{ STATIC_URL }}js/jquery-1.11.2.min.js"></script>
+        <script src="{{ STATIC_URL }}js/bootstrap.min.js"></script>
+        <script src="{{STATIC_URL}}js/jquery.dataTables.js"></script>
+        <script src="{{ STATIC_URL }}js/validaciones.js"></script>
+        <script src="{{ STATIC_URL }}js/jquery.alphanumeric.js"></script>
+        <style type="text/css">
+             table#tablas tr td{
+                border-collapse: separate;
+                border-spacing:  20px;
+                border: 0px solid #CCCCCC;
+                padding: 5px;
+                font-size: 12px; 
+                position: relative;
+                font-family: Arial; 
+             }
+            table#tablas tr td label{
+                
+                font-size: 12px; 
+                font-family: sans-serif;
+                font-weight: bold;
+            }
+
+	    .rightMenu {
+                position:relative;
+                float:right;
+            }
+            .right-caret {
+                border-bottom: 4px solid transparent;
+                border-top: 4px solid transparent;
+                border-left: 4px solid #000000;
+                display: inline-block;
+                height: 0;
+                opacity: 1;
+                vertical-align: top;
+                width: 0;
+            }
+            .right
+            {
+                float:right;
+            }
+        </style>
+    </head>
+    <body>
+        {% load templatag_grupos %}
+        <header>
+            
+            <nav class="navbar navbar-default">
+                <div class="container-fluid">
+                    <div>
+                        <nav class="navbar navbar-default navbar-fixed-top">
+                    <div class="container">
+                    <div id="navbar" class="navbar-collapse collapse">
+                        <ul class="nav navbar-nav">
+                            <li><a href='/menu/' >Inicio</a></li>
+                            {% ifusergroup Registro %}
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Registrar <span class="caret"></span></a>
+                                <ul class="dropdown-menu" role="menu">
+                                    <li><a href='/candidatos'>Candidatos</a></li>
+                                    <li><a href='/elecciones'>Elecciones</a></li>
+                                    <li><a href='/exitpoll/'>Exit Poll</a></li>
+                                    <li><a href='/partidos'>Partidos</a></li>
+                                    
+                                </ul>
+                            </li>
+                            {% endifusergroup %}
+                            {%  ifusergroup Consulta %}
+                            <li><a href='/consulta/'>Consultas de Votos</a></li>
+                            {% endifusergroup %}
+                            {% ifusergroup Configuraciones %}
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Configuraciones <span class="caret"></span></a>
+                                <ul class="dropdown-menu" role="menu">
+                                    <li><a href='/configuraciones/centros/'>Centro Electorales</a></li>
+                                    <li><a href='/configuraciones/grupo_etareo/'>Grupo Etáreo</a></li>
+                                    <li><a href='/configuraciones/tipo_eleccion/categorias/' >Categoria de Elección</a></li>
+                                    <li><a href='/configuraciones/tipo_eleccion/tipos/'>Tipo de Elección</a></li>
+                                </ul>
+                            </li>
+                            {% endifusergroup %}
+                            {% ifusergroup Topologia %}
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Topologia <span class="caret"></span></a>
+                                <ul class="dropdown-menu" role="menu">
+                                    <li><a href='/configuraciones/topologia/estados' >Estados</a></li>
+                                    <li><a href='/configuraciones/circuitos/'>Circuitos</a></li>
+                                    <li><a href='/configuraciones/topologia/municipios'>Municipios</a></li>
+                                    <li><a href='/configuraciones/topologia/parroquias'>Parroquias</a></li>
+                                </ul>
+                            </li>
+                            {% endifusergroup %}
+                            {%  ifusergroup Consulta %}
+                            <li><a href='#'>Reportes</a></li>
+                            {% endifusergroup %}
+                            <li style="position: static; float: right"><a  href="{% url 'vista_logout' %}">Cerrar sesión</a></li>
+                        </ul>
+                        
+                    </div>
+                    </div>
+            </nav>
+    
+        </header>
+        <center>
+            <div>
+                {% block contenido %}{% endblock %}
+            </div>
+        </center>
+        <footer style="margin-top: 100px; font-size: 18px">
+            <center>
+            <p>Aplicación para la realizaciones de Exit Poll, Secretaria de Tecnología Estado Aragua 2015</p>
+            </center>
+        </footer>
+    </body>
+
+</html>

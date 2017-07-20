@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+{% extends 'base.html' %}
+
+{% block contenido %}
+<html>
+<head>
+    <title>Modificar Partidos</title>
+</head>
+<script type="text/javascript">
+$(document).ready(function(){
+    $('#n_partidos').alpha({allow:" "}); //Valida solo valores tipo texto
+    $('#siglas').alpha(); //Valida solo valores tipo texto
+    $('#correo').alphanumeric({allow:"@._"});
+    $('#twitter').alphanumeric({allow:"@._"});
+    $('#telefono').numeric(); //Solo permite numeros
+    $('#nom_presidente').alpha({allow:" "});
+    $('#ape_presidente').alpha({allow:" "});
+    $('#registrar').click(function(){  //Valida al guardar que el rago no sea menor 3 caracteres
+        if ($('#n_partidos').val().length < 5) {
+            alert('Nombre Muy Corto');
+            return false;
+        }
+	if ($('#correo').val().length < 10) {
+            alert('Correo invalido');
+            return false;
+	}
+	if ($('#twitter').val().length < 4) {
+            alert('twitter invalido');
+            return false;
+        }
+	if ($('#telefono').val().length < 11) {
+	    alert($('#telefono').val())
+            alert('Teléfono invalido (recuerde incluir el código de area');
+            return false;
+        }
+	if ($('#nom_presidente').val().length < 2) {
+            alert('Nombre de Presidente invalido (Muy Corto)')
+            return false;
+        }
+	if ($('#ape_presidente').val().length < 2) {
+            alert('Apellido de Presidente invalido (Muy Corto)');
+            return false;
+        }
+        else {
+            alert('Correcto');
+        }
+    });
+});
+</script>
+<body>
+    <form method="post">
+	{% csrf_token %}
+		<table enctype="multipart/form-data" style="text-align:center;">
+	    <tr>
+		<td colspan="6" align= "center" style='background-color: #FF5E00; color: #FFFFFF;height: 25px'>
+		     <strong>Modificar Partido</strong>
+		</td>
+	    </tr>
+	    <tr>
+		<td>Nombre del Partido</td>
+		<td>
+		    <input type='text' maxlength="50" style='width:335px' value='{{ obj_reg_part.n_partidos }}' required=True id="n_partidos" name="n_partidos"/>
+		</td>
+	    </tr>
+	    <tr>
+		<td>Siglas</td>
+		<td>
+		    <input type='text' value='{{ obj_reg_part.siglas }}' maxlength="10" required id="siglas" name="siglas"/>
+		</td>
+	    </tr>
+	    <tr>
+		<td>Logo</td>
+		<td>
+		    <input id="foto" value='{{ obj_reg_part.foto_partido }}' type="file" name="foto_partido"/>
+		</td>
+	    </tr>
+	    <tr>
+		<td>Correo del Partido</td>
+		<td>
+		    <input id="correo" value='{{ obj_reg_part.correo }}' maxlength="40" style='width:335px' name="correo" type="email" required=True />
+		</td>		
+	    </tr>
+	    <tr>
+		<td>Twitter</td>
+		<td>
+		    <input id="twitter" value='{{ obj_reg_part.twitter }}' maxlength="30" style='width:335px' name="twitter" type="text" required=True />
+		</td>
+	    </tr>
+	    <tr>
+		<td>Teléfono</td>
+		<td>
+		    <input id="telefono" value='{{ obj_reg_part.telefono }}' maxlength="11" name="telefono" type="text" required=True />
+		</td>
+	    </tr>
+	    <tr>
+		<td colspan="6" style='background-color: #1E90FF;color: #FFFFFF; height: 25px;font-size: medium'>
+		    Presidente
+		</td>
+	    </tr>
+	    <tr>
+		<td>Nombre del Presidente</td>
+		<td>
+		    <input type='text' style='width:335px' value='{{ obj_reg_part.nom_presidente }}' maxlength="30" required id="nom_presidente" name="nom_presidente"/>
+		</td>
+	    </tr>
+	    <tr>
+		<td>Apellido del Presidente</td>
+		<td>
+		    <input type='text' style='width:335px' value='{{ obj_reg_part.ape_presidente }}' maxlength="30" required id="ape_presidente" name="ape_presidente"/>
+		</td>
+	    </tr>
+	    <tr>
+		<td>
+		    <input id='edit_user_create' type="hidden" name='user_create' value="{{obj_reg_part.user_create.id }}">
+		    
+		</td>
+	    </tr>
+	    <tr>
+		<td>
+		    <input id='user_update' type="hidden" name='user_update' value='{{ user.id }}'>
+		    
+		</td>
+	    </tr>
+	    <tr>
+		<td colspan="6"><input type="submit" id="modificar" value="Modificar"/></td>
+	    </tr>
+	</table>
+    </form>
+</body>
+</html>
+{% endblock %}

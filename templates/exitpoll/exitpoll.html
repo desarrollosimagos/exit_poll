@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+{% extends 'base.html' %}
+
+{% block contenido %}
+
+<html>
+<head>
+    <meta charset="utf-8">
+        <title>Registrar ExitPoll</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="description" content="">
+        <meta name="author" content="">
+    
+    
+    <script type="text/javascript">
+	$(document).ready(function() {
+
+	    $('select').on({
+		change: function() {
+		    $(this).removeClass('has-error');
+		}
+	    });
+    
+	    $('#id_eleccion').change(function() {
+		var id_exit = $(this).val();
+
+		$('select').prop('disabled',false)
+		$('#id_categoria_eleccion,#id_tipo').val('')
+		//$('#id_cod_estado,#id_cod_municipio,#id_circuito,#id_cod_parroquia').val('0')
+		if (id_exit > 0) {
+		    $.get('/exitpoll/exit_poll_ajax/', {'id':id_exit}, function(datos) {
+			$('#id_categoria_eleccion').val(datos.categoria)
+			$('#id_tipo').val(datos.tipo)
+			nivel = datos.nivel
+			$('#val_nivel').val(nivel)
+			if (nivel == 5) { //Elecciones Presidenciales
+			$('#id_cod_estado,#id_cod_municipio,#id_circuito,#id_cod_parroquia,#id_cod_sector,#id_cod_pol,#id_cod_n').prop('disabled',true)
+			}
+			else if (nivel == 4) { //Eleccion de Gobernadores
+			    $('#id_circuito,#id_cod_municipio,#id_cod_parroquia,#id_cod_sector,#id_cod_pol,#id_cod_n').prop('disabled',true)
+			}
+			else if (nivel == 3) { //Eleccion a Circuitos
+			    $('#id_cod_municipio,#id_cod_parroquia,#id_cod_sector,#id_cod_pol,#id_cod_n').prop('disabled',true)
+			}
+			else if (nivel == 2) { //Eleccion asociada a las Alcaldias
+			    $('#id_circuito,#id_cod_parroquia,#id_cod_sector,#id_cod_pol,#id_cod_n').prop('disabled',true)
+			}
+			else if (nivel == 1) { //Eleccion asociada a las Parroquias
+			    $('#id_circuito,#id_cod_sector,#id_cod_pol,#id_cod_n').prop('disabled',true)
+			}
+			else if (nivel == 6) { //Eleccion asociada a las Poligonales (Consejos Comunales)
+			    $('#id_circuito,#id_cod_n').prop('disabled',true)
+			}
+			else if (nivel == 7) { //Eleccion asociada a los Centros (UBCH)
+			    $('#id_circuito,#id_cod_sector,#id_cod_pol').prop('disabled',true)
+			}
+		    },'json');    
+		}
+	    });
+	    
+	    $('#guardar').click(function(e) {
+		e.preventDefault();
+		var candidato = $('#candidatos').find('option').filter(':selected').val()
+		var id_eleccion = $('#id_eleccion').find('option').filter(':selected').val()
+		var id_estado = $('#id_cod_estado').find('option').filter(':selected').val()
+		var id_municipio = $('#id_cod_municipio').find('option').filter(':selected').val()
+		var id_parroquia = $('#id_cod_parroquia').find('option').filter(':selected').val()
+		var circuito = $('#id_circuito').find('option').filter(':selected').val()
+		var sector = $('#id_cod_sector').find('option').filter(':selected').val()
+		var poligonal = $('#id_cod_pol').find('option').filter(':selected').val()
+		//var centro = $('#id_cod_n').find('option').filter(':selected').val()
+		var nivel = $('#val_nivel').val()
+		
+		if (candidato == 0) { //si candidato es igual a 0
+		    alert('Debe indicar el candidato'); // mensaje debe indicar candidato
+		    $('#candidatos').addClass('has-error'); // colocar class has-error de boostrap
+		    $('#candidatos').focus()
+		    //$('#candidatos').css('border','1px solid red'); // colocar borde rojo
+		}else if (id_eleccion == 0) { //si eleccion es igual a 0
+		    alert('Debe indicar la Elección');
+		    $('#id_eleccion').addClass('has-error'); // colocar class has-error de boostrap
+		    $('#id_eleccion').focus()
+		    //$('#id_eleccion').css('border','1px solid red');
+		}else if ((nivel == 1 ) && id_estado == 0)  {
+		    alert('Debe indicar el Estado');
+		    $('#id_cod_estado').addClass('has-error');
+		    $('#id_cod_estado').focus()
+		    //$('#id_cod_estado').css('border','1px solid red');
+		}else if ((nivel == 1 ) && id_municipio == 0) {
+		    alert('Debe indicar el Municipio');
+		    $('#id_cod_municipio').addClass('has-error');
+		    $('#id_cod_municipio').focus()
+		    //$('#id_cod_municipio').css('border','1px solid red');
+		}else if ((nivel == 1 ) && id_parroquia == 0) {
+		    alert('Debe indicar la Parroquia');
+		    $('#id_cod_parroquia').addClass('has-error');
+		    $('#id_cod_parroquia').focus()
+		    //$('#id_cod_parroquia').css('border','1px solid red');
+		}else if ((nivel == 2 ) && id_estado == 0) {
+		    alert('Debe indicar el Estado');
+		    $('#id_cod_estado').addClass('has-error');
+		    $('#id_cod_estado').focus()
+
+		    //$('#id_cod_estado').css('border','1px solid red');
+		}else if ((nivel == 2 ) && id_municipio == 0) {
+		    alert('Debe indicar el Municipio');
+		    $('#id_cod_municipio').addClass('has-error');
+		    $('#id_cod_municipio').focus()
+		}else if ((nivel == 3 ) && id_estado == 0) {
+		    alert('Debe indicar el Estado');
+		    $('#id_cod_estado').addClass('has-error');
+		    $('#id_cod_estado').focus()
+		    //$('#id_cod_estado').css('border','1px solid red');
+		}else if ((nivel == 3 ) && circuito == 0) {
+		    alert('Debe indicar el Circuito');
+		    $('#id_circuito').addClass('has-error');
+		    $('#id_circuito').focus()
+		    //$('#id_circuito').css('border','1px solid red');
+		}else if ((nivel == 4 ) && id_estado == 0) {
+		    alert('Debe indicar el Estado');
+		     $('#id_cod_estado').addClass('has-error');
+		    $('#id_cod_estado').focus()
+		}else if (nivel == 5) {
+		     $('#form_exitpoll').submit();
+		}else if ((nivel == 6 ) && id_estado == 0) {
+		    alert('Debe indicar el Estado');
+		    $('#id_cod_estado').addClass('has-error');
+		    $('#id_cod_estado').focus()
+		    //$('#id_cod_estado').css('border','1px solid red');
+		}else if ((nivel == 6 ) && id_municipio == 0) {
+		    alert('Debe indicar el Municipio');
+		    $('#id_cod_municipio').addClass('has-error');
+		    $('#id_cod_municipio').focus()
+		    //$('#id_cod_municipio').css('border','1px solid red');
+		}else if ((nivel == 6 ) && id_parroquia == 0) {
+		    alert('Debe indicar la Parroquia');
+		    $('#id_cod_parroquia').addClass('has-error');
+		    $('#id_cod_parroquia').focus()
+		    //$('#id_cod_parroquia').css('border','1px solid red');
+		}else if ((nivel == 6 ) && sector == 0) {
+		    alert('Debe indicar el Sector');
+		    $('#id_cod_sector').addClass('has-error');
+		    $('#id_cod_sector').focus()
+		    //$('#id_cod_parroquia').css('border','1px solid red');
+		}else if ((nivel == 6 ) && poligonal == 0) {
+		    alert('Debe indicar la Poligonal');
+		    $('#id_cod_pol').addClass('has-error');
+		    $('#id_cod_pol').focus()
+		    //$('#id_cod_parroquia').css('border','1px solid red');
+		}else if ((nivel == 7 ) && id_estado == 0) {
+		    alert('Debe indicar el Estado');
+		    $('#id_cod_estado').addClass('has-error');
+		    $('#id_cod_estado').focus()
+		    //$('#id_cod_estado').css('border','1px solid red');
+		}else if ((nivel == 7 ) && id_municipio == 0) {
+		    alert('Debe indicar el Municipio');
+		    $('#id_cod_municipio').addClass('has-error');
+		    $('#id_cod_municipio').focus()
+		    //$('#id_cod_municipio').css('border','1px solid red');
+		}else if ((nivel == 7 ) && id_parroquia == 0) {
+		    alert('Debe indicar la Parroquia');
+		    $('#id_cod_parroquia').addClass('has-error');
+		    $('#id_cod_parroquia').focus()
+		    //$('#id_cod_parroquia').css('border','1px solid red');
+		}
+		//else if ((nivel == 7 ) && centro == 0) {
+		//    alert('Debe indicar el Centro de Votación');
+		//    $('#id_cod_n').addClass('has-error');
+		//    $('#id_cod_n').focus()
+		    //$('#id_cod_parroquia').css('border','1px solid red');
+		//}
+		else {
+		    $.post('',$('#form_exitpoll').serialize()+'&bandera=true',function(response){
+			if (response == 'existe') {
+			    alert('Este Candidato ya esta Registrado para esta elección');
+			    $('#candidatos').focus()
+			}else{
+			    $('#form_exitpoll').submit(); 
+			}
+		    });
+		}
+		//}else{
+		//   if (nivel == 5) {
+		//   }
+		//    $('#form_exitpoll').submit();
+		//}
+	    });
+	    $("#candidatos,#id_eleccion,#id_cod_estado,#id_cod_municipio,#id_cod_parroquia,#id_circuito,#id_cod_sector,#id_cod_pol,#id_cod_n").select2();
+	    $('#volver').click(function(){
+	    url = '/exitpoll/'
+	    window.location = url
+	    })
+	    //show()
+	    
+	    
+	});
+	
+	
+    </script>
+    
+  
+</head>
+{% load templatag_grupos %}
+{% ifusergroup Registro %}
+<body>
+    <br/>
+    <br/>
+    <div id="fecha_hora"></div>
+    <div  style="width:80%" class="panel panel-primary">
+	<div class="panel-heading">
+	    <label class="panel-title">Registrar Exit Poll</label>
+	</div>
+	<div class="panel-body">
+	    <form method="post" id="form_exitpoll" >
+		{% csrf_token %}
+	        <fieldset><legend class="titulo">Asociación de Candidatos a Elecciones:</legend></fieldset> 
+		<br/>
+
+		<div class="form-inline">
+		    <div class="form-group col-xs-6">
+			<label>Candidatos:&nbsp;</label>
+			<select style="width: 60%;" class="form-control input-sm"  id="candidatos" name="candidatos">
+			    <option value="0">Seleccione</option>
+			    {% for n in listar_candidato %}
+			    <option value="{{n.id}}">{{ n.nombre }} {{ n.apellido }}</option>
+			    {% endfor %}
+			</select>                           
+		    </div>
+		    <div class="form-group col-xs-6">
+			<label>Elección:&nbsp;</label>
+			<select style="width: 60%;" id="id_eleccion" name="eleccion" >
+			    <option value="0">Seleccione</option>
+			    {% for m in listar_elecciones %}
+			    <option value="{{m.id}}">{{m.nombre}}</option>
+			    {% endfor %}
+			</select>
+		    </div>                    
+		</div>
+		<br/>
+		<br/>
+		<br/>
+		    
+                <fieldset><legend class="titulo">Datos de la Elección:</legend></fieldset>
+		<br/>
+		<div class="form-inline">
+		    <div class="form-group col-xs-6">
+			<label>Categoria: &nbsp;</label>
+			<input style="width: 60%; color:#000000"   disabled="disabled" class="form-control input-sm" maxlength="50" type="text" name="nombres" id="id_categoria_eleccion"/>
+		    </div>
+		    <div class="form-group col-xs-6">
+			<label>Tipo:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
+			<input style="width: 60%; color:#000000" disabled="disabled" class="form-control input-sm" maxlength="50" type="text" name="tipo" id="id_tipo"/>
+		    </div>                        
+		</div>
+		<br/>
+		<br/>
+		<br/>
+		
+		<fieldset><legend class="titulo">Ubicación o Topología:</legend></fieldset>
+		<br/>
+		<div class="form-inline">
+		    <div class="form-group col-xs-6">
+			<label>Estados:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
+			<select style="width:60%;" class="form-control input-sm" id="id_cod_estado" name="estado" required=True>
+			    <option value="0">Seleccione</option>
+			   {% for e in listar_estados %}
+			    <option value="{{e.cod_estado}}">{{ e.estado }}</option>
+			    {% endfor %}
+			</select>
+		    </div>
+		    <div class="form-group col-xs-6">
+			<label>Municipios:&nbsp;</label>
+			<select style="width:60%;" id="id_cod_municipio" name="municipio">
+				<option value="0" selected="selected">Seleccione</option>
+			</select>
+		    </div>                        
+		</div>
+		<br/>
+		<br/>
+		<br/>
+		<div class="form-inline">
+		    <div class="form-group col-xs-6">
+			<label>Parroquias:&nbsp;</label>
+			 <select style="width:60%;" id="id_cod_parroquia" name="parroquia">
+			    <option value="0" selected="selected">Seleccione</option>
+			</select>
+		    </div>
+		    <div class="form-group col-xs-6">
+			<label>Circuitos:&nbsp;</label>
+			<select style="width:60%;" id="id_circuito" name="circuito">
+			    <option value="0" selected="selected">Seleccione</option>
+			</select>
+		    </div>                        
+		</div>
+		<br/>
+		<br/>
+		<br/>
+			
+		<div class="form-inline">
+		    <div class="form-group col-xs-6">
+			<label>Sectores:&nbsp;&nbsp;&nbsp;&nbsp;</label>
+			 <select style="width:60%;" id="id_cod_sector" name="sector">
+			    <option value="0" selected="selected">Seleccione</option>
+			</select>
+		    </div>
+		    <div class="form-group col-xs-6">
+			<label>Poligonal:&nbsp;</label>
+			<select style="width:60%;" id="id_cod_pol" name="poligonal">
+			    <option value="0" selected="selected">Seleccione</option>
+			</select>
+		    </div>                        
+		</div>
+		<br/>
+		<br/>
+		<div class="form-inline">
+		    <div class="form-group col-xs-6">
+			 <input id='user_create' type="hidden" name='user_create' value='{{ user.id }}'>
+		    </div>                        
+		</div>
+		<br/>
+	
+		<div class="row" style="text-align: center">
+		    <button type="button" id="volver" style="font-weight: bold;font-size: 13px" class="btn btn-warning " >
+			&nbsp;<span class="glyphicon glyphicon-chevron-left"></span>&nbsp;Volver
+		    </button>
+		    <button type="submit" id="registrar" style="font-weight: bold;font-size: 13px" class="btn btn-primary"/>
+			&nbsp;<span class="glyphicon glyphicon-floppy-disk"></span>&nbsp;Registrar
+		    </button>
+		    <button type="reset" id="limpiar" style="font-weight: bold;font-size: 13px" class="btn btn-success"/>
+			&nbsp;<span class="glyphicon glyphicon-retweet"></span>&nbsp;&nbsp;Limpiar
+		    </button>
+		</div>
+			
+					       
+	    </form>
+	    <input type="hidden" name="val_nivel" id="val_nivel"/>
+	</div>
+    </div>
+    <!--{{form.as_p}}-->
+   
+</body>
+{% else %}
+<p style="color: #FF0000; font-size: 18px">Disculpe No esta autorizado para esa área.</p>
+{% endifusergroup %}
+</html> 
+{% endblock %}

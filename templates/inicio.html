@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+{% block contenido %}
+
+<html>
+<head>
+	<meta charset="utf-8"/>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+	<title>{% block titulo %} Exit Poll {% endblock %}</title>
+	<link rel="stylesheet" type="text/css" href="{{STATIC_URL}}css/bootstrap.css">
+	<link rel="stylesheet" type="text/css" href="{{STATIC_URL}}css/bootstrap.theme.css">
+	
+	<script src="{{ STATIC_URL }}js/jquery-1.11.2.min.js"></script>
+	<script src="{{ STATIC_URL }}js/bootstrap.min.js"></script>
+	<script src="{{ STATIC_URL }}js/validaciones.js"></script>
+	<script src="{{ STATIC_URL }}js/bootbox.js"></script>
+	<script src="{{ STATIC_URL }}js/footerfijo.js"></script>
+	
+
+</head>
+<script type="text/javascript">
+	$(document).ready(function(){
+		$('#sistema_encuesta').click(function(){
+			url = '/menu/sistema_encuestas'
+			window.location = url
+		})
+	});
+	$(document).ready(function(){
+		$('#exit_poll').click(function(){
+			url = '/menu/exit_polls'
+			window.location = url
+		})
+	});
+</script>
+{% load templatag_grupos %}
+<body>
+	 <header>
+        <div>
+			<nav class="navbar navbar-inverse" style="width: 100%;font-size: 13px">
+				<div class="navbar-header">
+					<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+					  <span class="sr-only">Toggle navigation</span>
+					  <span class="icon-bar"></span>
+					  <span class="icon-bar"></span>
+					  <span class="icon-bar"></span>
+					</button>
+				</div>
+				<div id="navbar" aria-expanded="true" class="navbar-collapse collapse in" style="font-weight: bold">
+					<ul class="nav navbar-nav" >
+						<li><a href='/menu/' >Inicio</a></li>
+					</ul>
+					{% ifusergroup Administrador %} 
+					<ul class="nav navbar-nav" > 
+						<li><a href='/login/nuevo_usuario' >Gestión de Usuarios</a></li> 
+					</ul> 
+					{% endifusergroup %}
+					<ul class="nav navbar-nav navbar-right">
+						<li><a  href="{% url 'logout_view' %}">Cerrar sesión: {{ user }} </a></li>
+					</ul>
+				</div>
+			</nav>
+			
+			<div class="jumbotron">
+				<center>
+					<h1>BIENVENIDO</h1>
+					<h4><p>Buen día {{user|upper}}, tu última conexión: {{user.last_login | date:'d-m-Y h:i a'}}</p></h4>
+					<h4><p>Por favor seleccione, el sistema a utilizar:</p></h4>
+					{% ifusergroup ExitPoll %}
+					<button type="button" id="exit_poll" style="font-size: 35px ;font-weight: bold; width: 500px; height: 250px" class="btn btn-primary">
+						<span class="glyphicon glyphicon-stats"></span>&nbsp;&nbsp;EXIT POLL
+					</button>
+					{% endifusergroup %}
+					{% ifusergroup SistemaEncuesta %}
+					&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+					<button type="button" id="sistema_encuesta" style="font-size: 35px ;font-weight: bold; width: 500px; height: 250px" class="btn btn-info">
+						<span class="glyphicon glyphicon-list-alt"></span>&nbsp;&nbsp;SISTEMA DE ENCUESTA
+					</button>
+					{% endifusergroup %}
+				</center>
+			</div>
+			<div id="footer" style="text-align:center;">
+				<img src="{{ STATIC_URL }}img/footer.png"/>
+			</div>
+		</div>
+    </header>
+</body>
+</html>
+{% endblock %}
+

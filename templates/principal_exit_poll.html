@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block contenido %}
+
+<div class="modal-dialog" style='margin-top: 7%;width: 80%'> <!-- Modal content-->
+	<div class="modal-content">
+		<div class="modal-header" style="background-color: #EFEDED " >
+			<h4 class="modal-title" style="color: #4288B2;font-size: 18px;font-weight: bold" >BIENVENIDO</h4>
+		</div>
+		<div class="modal-body" style="background-color: #FCFCFC ">
+			<table id="principal"  class="table table-bordered" style="width:80%">
+				<thead>
+					<tr style="background-color: #4288B2">
+						<th style='text-align: center; color: #FFFFFF; font-size: 14px'>Exit Polls Activas</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for m in list_t %}
+					{% if m.ele_activa == True %}
+					<tr style="font-size: 14px" class="{% cycle 'impar' 'par' %}">
+					<td style="background-color: #FFFFFF; color: #000000">
+						{{m.nombre}}
+					</td>
+					</tr>
+					{% endif %}
+					{% empty %}
+					<tr>
+						<td>
+							No hay Elecciones activas en este momento.
+						</td>
+					</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+
+		</div>
+		<div class="modal-footer" style="background-color: #EFEDED "> 
+		</div>
+	</div>
+</div>
+
+{% endblock %}

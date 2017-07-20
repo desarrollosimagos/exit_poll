@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+    <title>Exit Poll</title>
+    
+    <meta charset="utf-8"/>
+        <title>{% block titulo %} Exit Poll {% endblock %}</title>
+        <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}css/bootstrap.css">
+        <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}css/bootstrap.theme.css">
+       
+        
+        <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}css/select2.css"/>
+        <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}css/select2-bootstrap.css"/>
+        <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}css/dataTables.bootstrap.css"/>
+        <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}css/dataTables.responsive.css"/>
+        
+        <script src="{{ STATIC_URL }}js/jquery-1.11.2.min.js"></script>
+        <script src="{{ STATIC_URL }}js/bootstrap.min.js"></script>
+        <script src="{{STATIC_URL}}js/jquery.dataTables.js"></script>
+        <script src="{{ STATIC_URL }}js/validaciones.js"></script>
+        <script src="{{ STATIC_URL }}js/jquery.alphanumeric.js"></script>
+        <script src="{{ STATIC_URL }}js/jquery.fancybox.js"></script>
+        <script src="{{ STATIC_URL }}js/bootbox.js"></script>
+        
+        <script src="{{ STATIC_URL }}js/select2.js"></script>
+        <script src="{{ STATIC_URL }}js/select2_locale_es.js"></script>
+        <script src="{{ STATIC_URL }}js/bootstrap-select.js"></script>
+        <script src="{{ STATIC_URL }}js/dataTables.bootstrap.js"></script>
+        <script src="{{ STATIC_URL }}js/dataTables.responsive.min.js"></script>
+        <script src="{{ STATIC_URL }}js/highcharts.js"></script>
+        <script src="{{STATIC_URL}}js/footerfijo.js"></script>
+	
+	{% block scriptgrouping %}{% endblock %}
+	
+	 <script type="text/javascript">
+            function redireccionar(){
+              window.locationf="";
+            } 
+            setTimeout ("redireccionar()", 5000); //tiempo expresado en milisegundos
+        </script>
+        
+        <style type="text/css">
+	     
+            body{
+                font-size: 13px !important; 
+            }
+            
+            .titulo{
+                 font-size: 13px;
+                 font-weight: bold;
+                 font-family: sans-serif;
+            }
+            
+            div{
+                 font-size: 13px;
+                 /*font-weight: bold;*/
+            }
+            
+            
+           .subtitulo{
+                 font-size: 13px;
+                 font-weight: bold;
+            }
+            
+            th{
+                
+                font-size: 12px; 
+                font-family: sans-serif;
+                font-weight: bold;
+            }
+	    td{
+                
+                font-size: 12px; 
+                font-family: sans-serif;
+                font-weight: normal;
+            }
+	    
+            .rightMenu {
+                position:relative;
+                float:right;
+            }
+            .right-caret {
+                border-bottom: 4px solid transparent;
+                border-top: 4px solid transparent;
+                border-left: 4px solid #000000;
+                display: inline-block;
+                height: 0;
+                opacity: 1;
+                vertical-align: top;
+                width: 0;
+            }
+            .right
+            {
+                float:right;
+            }
+        </style>
+    
+    
+    <!--<meta http-equiv="refresh" content="10; url=/listarcandidato/" />-->
+   
+</head>
+
+<body>
+    <header>
+        <div>
+            <center>
+                <img style="width: 100%" src="{{ STATIC_URL }}img/banner.jpg"/>
+            </center>
+        </div>
+        <div>
+            <center>
+                
+            <nav class="navbar navbar-inverse" style="width: 100%">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                      <span class="sr-only">Toggle navigation</span>
+                      <span class="icon-bar"></span>
+                      <span class="icon-bar"></span>
+                      <span class="icon-bar"></span>
+                    </button>
+                </div>
+                    <div id="navbar" aria-expanded="true" class="navbar-collapse collapse in" style="font-weight: bold">
+                        <ul class="nav navbar-nav" >
+                            <li><a href='/menumovil/' >Inicio</a></li>
+                           
+                           
+    
+                        </ul>
+                        <ul class="nav navbar-nav navbar-right">
+                            
+                            <li><a  href="{% url 'logout_view' %}">Cerrar sesión: {{ user }} </a></li>
+                        </ul>
+                    </div>
+            </nav>
+            </center>
+            </div>
+        
+        
+            <nav>
+                <div id='cssmenu' style="margin-bottom: 50px">
+                    <ul class='active has-sub'>
+                    {% block menu %} {% endblock %}
+                    </ul>
+                </div>
+            </nav>
+        
+    </header>
+    <div>
+         {% block contenido %}{% endblock %}
+    </div>
+    <div id="footer" style="text-align:center;">
+            <img src="{{ STATIC_URL }}img/footer.png"/>
+        </div>
+</body>
+</html>
+
+

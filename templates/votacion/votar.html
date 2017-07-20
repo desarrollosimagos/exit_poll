@@ -1,0 +1,54 @@
+{% extends 'basemovil.html' %}
+{% block menu %}
+{% endblock %}
+{% block contenido %}
+
+<script type="text/javascript">
+$(document).ready(function(){
+});
+
+</script>
+<body>
+<center>
+
+    <form method="post">
+	{% csrf_token %}
+	<!--{{form.as_p}}-->
+        
+    <div  style="width:40%" class="panel panel-default">
+		<div class="panel-heading">
+			{%for m in foto_par %}
+			<img style="width:90%px;height: 40%" class="img_pe" src="{{MEDIA_URL}}{{m.foto_partido}}">
+			{% endfor %}
+		</div>
+		<div class="panel-body">
+
+			{% for personas in listar_candidato %}
+			<div class="row form-group">
+				<img style="width:50%;height: 50%" class="img_pe" src="{{MEDIA_URL}}{{personas.foto}}">
+				<div class="form-group col-xs-12">
+					<label style="font-weight: bold; font-size: 18px">{{ personas.nombre }} {{ personas.apellido }}</label>
+					<input type="hidden" id="id_candidatos" name="candidatos" value="{{ personas.id }}"/>
+					   {{cand_id}}     
+				</div>
+			</div>
+			{% endfor %}
+			<div class="row">
+				<input id="eleccion" type="hidden" name="eleccion" value='{{id_elec}}' />
+				<input id="id_grupo_etareo" type="hidden" name="grupo_etareo" value='{{id_grupo}}' />
+				<input id="id_sexo" type="hidden" name="sexo"value='{{id_sexo}}' />
+				<input id="estado" type="hidden" name="estado" value='{{id_estado}}' />
+				<input id="circuito" type="hidden" name="circuito" value='{{id_circuito}}' />
+				<input id="municipio" type="hidden" name="municipio"value='{{id_municipio}}' />
+				
+				<input type="submit" id="votar" style="font-weight: bold; font-size: 18px;width:50%;height: 10%" class="btn btn-primary btn-lg " value="Votar" >
+			</div>
+              
+            
+            
+        </div>
+    </div>
+    </form>
+   
+
+{% endblock %}

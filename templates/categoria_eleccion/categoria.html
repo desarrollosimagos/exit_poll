@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+{% extends 'base.html' %}
+
+{% block contenido %}
+<html>
+<head>
+    <title>Registrar Categoria de Eleccion</title>
+</head>
+
+<script type="text/javascript">
+$(document).ready(function(){
+    $('#categoria').alpha({allow:" "}); //Valida solo valores tipo texto
+    $('#registrar').click(function(e){ //Valida al guardar que la categoria no sea menor a 5 caracteres
+        e.preventDefault();
+	
+	$('input').on({
+	    keypress: function() {
+		$(this).parent('div').removeClass('has-error');
+	    }
+	});
+	
+	if (($('#categoria').val() == '')) {
+	    bootbox.alert('Disculpe, Debe Colocar el Nombre de la categoria', function() {	    
+		$('#categoria').parent('div').addClass('has-error');
+	    }); 
+	}
+	else if ($('#categoria').val().length < 4) {
+	    bootbox.alert('Disculpe, Nombre de la Categoria invalido (Muy Corto)', function() {	    
+		$('#categoria').parent('div').addClass('has-error');
+	    }); 
+
+        }
+	//Valida que el campo no este vacio
+        else if($('#categoria').val() == null || $('#categoria').val().length == 0 || /^\s+$/.test($('#categoria').val())) {
+            bootbox.alert('Disculpe, no esta registrando nada', function() {	    
+		$('#categoria').parent('div').addClass('has-error');
+	    });
+
+        }
+        else {
+            $.post('',$('#form_categoria').serialize()+'&bandera=true',function(response){
+		if (response == 'existe') {
+		    bootbox.alert('Disculpe, Esta Categoria ya esta registrado', function() {	    
+			$('#categoria').parent('div').addClass('has-error');
+		    });
+		}else{
+		    $('#form_categoria').submit(); 
+		}
+	    });
+        }
+    });
+    $('#volver').click(function(){
+        url = '/configuraciones/tipo_eleccion/categorias/'
+        window.location = url
+    })
+});
+</script>
+<body>
+    {% load templatag_grupos %}
+    {% ifusergroup Configuraciones %}
+    <br/>
+    <br/>
+    
+    <form id="form_categoria" method="post">
+    {% csrf_token %}
+	<br/>
+	<br/>
+	<div style="width: 80%;" class="panel panel-primary">
+	    <div class="panel-heading">
+		<label class="panel-title">Registrar Categoría</label>
+	    </div>
+	    <br/>
+	    <fieldset><legend class="titulo">Registrar Categoría</legend></fieldset>
+	    <br/>
+	    <div class="form-inline">
+		<div class="col-xs-3" ><label>&nbsp;</label></div>
+		<div class="form-group col-xs-1">
+		    <label>Categoría:</label>
+		</div>
+		<div class="form-group col-xs-5">
+		    <input type='text' maxlength="30" placeholder="Categoria de Elección. Eje: Municipal " style="width: 100%;font-size: 13px" id="categoria" name="categoria"/>
+		</div>
+		<div class="col-xs-3" ><label>&nbsp;</label></div>
+	    </div>
+	    <input id='user_create' type="hidden" name='user_create' value='{{ user.id }}'>
+	    <br/>
+	    <br/>
+	    <br/>
+	    <div class="row" style="text-align: center">
+		<button type="button" id="volver" style="font-weight: bold;font-size: 13px" class="btn btn-warning " >
+		    &nbsp;<span class="glyphicon glyphicon-chevron-left"></span>&nbsp;Volver
+		</button>
+		<button type="submit" id="registrar" style="font-weight: bold;font-size: 13px" class="btn btn-info"/>
+		    &nbsp;<span class="glyphicon glyphicon-floppy-disk"></span>&nbsp;Registrar
+		</button>
+		<button type="reset" id="limpiar" style="font-weight: bold;font-size: 13px" class="btn btn-success"/>
+		    &nbsp;<span class="glyphicon glyphicon-retweet"></span>&nbsp;&nbsp;Limpiar
+		</button>
+	    </div>
+	    <br/>
+	</div>
+    </form>
+    {% else %}
+    <p style="color: #FF0000; font-size: 18px">Disculpe No esta autorizado para esa área.</p>
+    {% endifusergroup %}
+</body>
+</html>
+{% endblock %}

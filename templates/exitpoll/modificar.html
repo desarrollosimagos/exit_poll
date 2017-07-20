@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+{% extends 'base.html' %}
+
+{% block contenido %}
+
+<html>
+<head>
+    <title>Registrar ExitPoll</title>
+    
+    <script type="text/javascript">
+	$(document).ready(function() {
+	    $('#id_eleccion').change(function() {
+		var id_exit = $(this).val();
+
+		$('select').prop('disabled',false)
+		$('#id_categoria_eleccion,#id_tipo').val('')
+		//$('#id_cod_estado,#id_cod_municipio,#id_circuito,#id_cod_parroquia').val('0')
+		if (id_exit > 0) {
+		    $.get('/exitpoll/exit_poll_ajax/', {'id':id_exit}, function(datos) {
+			$('#id_categoria_eleccion').val(datos.categoria)
+			$('#id_tipo').val(datos.tipo)
+			nivel = datos.nivel
+			alert(nivel)
+			$('#val_nivel').val(nivel)
+			if (nivel == 5) { //Elecciones Presidenciales
+			$('#id_cod_estado,#id_cod_municipio,#id_circuito,#id_cod_parroquia').prop('disabled',true)
+			}
+			else if (nivel == 4) { //Eleccion de Gobernadores
+			    $('#id_circuito,#id_cod_municipio,#id_cod_parroquia').prop('disabled',true)
+			}
+			else if (nivel == 3) { //Eleccion de Alcaldias
+			    $('#id_cod_municipio,#id_cod_parroquia').prop('disabled',true)
+			}
+			else if (nivel == 2) { //Eleccion asociada a Circuitos
+			    $('#id_circuito,#id_cod_parroquia').prop('disabled',true)
+			}
+			else if (nivel == 1) {
+			    $('#id_circuito').prop('disabled',true)
+			}
+		    },'json');    
+		}
+	    });
+	    
+	    $('#guardar').click(function(e) {
+		e.preventDefault();
+		var candidato = $('#candidatos').find('option').filter(':selected').val()
+		var id_eleccion = $('#id_eleccion').find('option').filter(':selected').val()
+		var id_estado = $('#id_cod_estado').find('option').filter(':selected').val()
+		var id_municipio = $('#id_cod_municipio').find('option').filter(':selected').val()
+		var id_parroquia = $('#id_cod_parroquia').find('option').filter(':selected').val()
+		var circuito = $('#id_circuito').find('option').filter(':selected').val()
+		var nivel = $('#val_nivel').val()
+		// REINICIAR LOS COLORES
+		$('#candidatos').css('border','');
+		$('#id_eleccion').css('border','');
+		$('#id_cod_estado').css('border','');
+		$('#id_cod_municipio').css('border','');
+		$('#id_cod_parroquia').css('border','');
+		$('#id_circuito').css('border','');
+		if (candidato == 0) { //si candidato es igual a 0
+		    alert('Debe indicar el candidato'); // mensaje debe indicar candidato
+		    $('#candidatos').css('border','1px solid red'); // colocar borde rojo
+		}else if (id_eleccion == 0) { //si eleccion es igual a 0
+		    alert('Debe indicar la Elección');
+		    $('#id_eleccion').css('border','1px solid red');
+		}else if ((nivel == 1 ) && id_estado == 0)  {
+		    alert('Debe indicar el Estado');
+		    $('#id_cod_estado').css('border','1px solid red');
+		}else if ((nivel == 1 ) && id_municipio == 0) {
+		    alert('Debe indicar el Municipio');
+		    $('#id_cod_municipio').css('border','1px solid red');
+		}else if ((nivel == 1 ) && id_parroquia == 0) {
+		    alert('Debe indicar la Parroquia');
+		    $('#id_cod_parroquia').css('border','1px solid red');
+		}else if ((nivel == 2 ) && id_estado == 0) {
+		    alert('Debe indicar el Estado');
+		    $('#id_cod_estado').css('border','1px solid red');
+		}else if ((nivel == 2 ) && id_municipio == 0) {
+		    alert('Debe indicar el Municipio');
+		    $('#id_cod_municipio').css('border','1px solid red');
+		}else if ((nivel == 3 ) && id_estado == 0) {
+		    alert('Debe indicar el Estado');
+		    $('#id_cod_estado').css('border','1px solid red');
+		}else if ((nivel == 3 ) && circuito == 0) {
+		    alert('Debe indicar el Circuito');
+		    $('#id_circuito').css('border','1px solid red');
+		}else if ((nivel == 4 ) && id_estado == 0) {
+			alert('Debe indicar el Estado');
+			$('#id_cod_estado').css('border','1px solid red');
+		}
+		else {
+		    $.post('',$('#form_exitpoll').serialize()+'&bandera=true',function(response){
+			if (response == 'existe') {
+			    alert('Este Candidato ya esta Registrado para esta elección');
+			    $('#candidatos').focus()
+			}else{
+			    $('#form_exitpoll').submit(); 
+			}
+		    });
+		}
+		//}else{
+		//   if (nivel == 5) {
+		//   }
+		//    $('#form_exitpoll').submit();
+		//}
+	    });
+	    
+	});
+    </script>        
+</head>
+{% load templatag_grupos %}
+{% ifusergroup Registro %}
+<body>
+    
+
+    
+    
+    <div  style="width:90%" class="panel panel-primary">
+	<div class="panel-heading">
+	    <label class="titulo">Modificar Candidatos a Elecciones</label>
+	</div>
+	<div class="panel-body">
+	    <form method="post" id="form_exitpoll" >
+		{% csrf_token %}
+	        <fieldset><legend class="titulo">Asociación de Candidatos a Elecciones:</legend></fieldset> 
+             
+			<div class="form-inline">
+                            <div class="form-group col-xs-6">
+                                <label class="subtitulo">Candidatos:&nbsp;</label>
+				<select style="width: 60%;" class="form-control input-sm"  id="candidatos" name="candidatos">
+				    <option value="">-----------------------------</option>
+				    {% for e in listar_candidato %}
+					{% if e.id == editar_exitpoll.candidatos_id %}
+					    <option value='{{e.id}}' selected='selected'>{{ e.nombre }} {{ e.apellido }}</option>
+					{% endif %}
+					{% if not e.id == editar_exitpoll.candidatos_id %}
+					    <option value='{{e.id}}'>{{ e.nombre }} {{ e.apellido }} </option>
+					{% endif %}
+				    {% endfor %}
+				</select>
+                               <!-- <select style="width: 60%;" class="form-control input-sm"  id="candidatos" name="candidatos">
+				    <option value="0">Seleccione</option>
+				    {% for n in listar_candidato %}
+				    <option value="{{n.id}}">{{ n.nombre }} {{ n.apellido }}</option>
+				    {% endfor %}
+				</select>    -->                       
+                            </div>
+                            <div class="form-group col-xs-6">
+                                <label class="subtitulo">Elección:&nbsp;</label>
+                                <select style="width: 60%;" id="id_eleccion" name="eleccion" >
+				    <option value="">-----------------------------</option>
+				    {% for e in listar_elecciones %}
+					{% if e.id == editar_exitpoll.eleccion_id %}
+					    <option value='{{e.id}}' selected='selected'>{{ e.nombre }}</option>
+					{% endif %}
+					{% if not e.id == editar_exitpoll.eleccion_id %}
+					    <option value='{{e.id}}'>{{ e.nombre }}</option>
+					{% endif %}
+				    {% endfor %}
+				</select>
+			    </div>                    
+                        </div>
+                        <br/>
+                        <br/>
+                        <br/>
+			
+                        
+			<fieldset><legend class="titulo">Datos de la Elección:</legend></fieldset>
+		
+			<div class="form-inline">
+                            <div class="form-group col-xs-6">
+                                <label class="subtitulo">Categoria: &nbsp;</label>
+				<div style="width:60%; "id="div_categoria" class="form-group">
+				    <input style="width:100%; color:#000000" disabled="disabled" class="form-control input-sm" maxlength="50" type="text" name="nombres" id="id_categoria_eleccion"/>
+				</div>
+				<!--<input style="width: 60%; color:#000000"   disabled="disabled" class="form-control input-sm" maxlength="50" type="text" name="nombres" id="id_categoria_eleccion"/>-->
+                            </div>
+                            <div class="form-group col-xs-6">
+                                 <label class="subtitulo">Categoria: &nbsp;</label>
+				<div style="width:60%; "id="div_categoria" class="form-group">
+				    <input style="width:100%; color:#000000" disabled="disabled" class="form-control input-sm" maxlength="50" type="text" name="nombres" id="id_categoria_eleccion"/>
+				</div>
+                            </div>                        
+                        </div>
+                        <br/>
+                        <br/>
+                        <br/>
+		
+                       
+			<fieldset><legend class="titulo">Ubicación o Topología:</legend></fieldset>
+		
+			<div class="form-inline">
+                            <div class="form-group col-xs-6">
+                                <label class="subtitulo">Estados:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
+                                <select style="width:60%;" class="form-control input-sm" id="id_cod_estado" name="estado" required=True>
+				    <option value="" selected="selected">Seleccione</option>
+				    {% for e in listar_estados %}
+					{% if e.cod_estado == editar_exitpoll.estado_id%}
+					    <option value='{{e.cod_estado}}' selected='selected'>{{ e.estado }}</option>
+					{% endif %}
+					{% if not e.cod_estado == editar_exitpoll.estado_id %}
+					    <option value='{{e.cod_estado}}'>{{ e.estado }}</option>
+					{% endif %}
+				    {% endfor %}
+				</select>
+                            </div>
+                            <div class="form-group col-xs-6">
+                                <label class="subtitulo">Municipios:&nbsp;</label>
+                                <select style="width:60%;" id="id_cod_municipio" name="municipio">
+					<option value="" selected="selected">Seleccione</option>
+					{% for m in listar_municipio %}
+					    {% if m.cod_municipio == editar_exitpoll.municipio_id %}
+						<option value='{{m.cod_municipio}}' selected='selected'>{{m.municipio}}</option>
+					    {% endif %}
+					    {% if not m.cod_municipio == editar_exitpoll.municipio_id %}
+						<option value='{{m.cod_municipio}}'>{{m.municipio}}</option>
+					    {% endif %}
+					{% endfor %}
+			    	</select>
+                            </div>                        
+                        </div>
+                        <br/>
+                        <br/>
+                        <br/>
+			<div class="form-inline">
+                            <div class="form-group col-xs-6">
+                                <label class="subtitulo">Parroquias:&nbsp;</label>
+                                 <select style="width:60%;" id="id_cod_parroquia" name="parroquia">
+				   <option value="" selected="selected">Seleccione</option>
+				    {% for p in listar_parroquia %}
+					{% if p.cod_parroquia == editar_exitpoll.parroquia_id %}
+					    <option value='{{p.cod_parroquia}}' selected='selected'>{{p.parroquia}}</option>
+					{% endif %}
+					{% if not p.cod_parroquia == editar_exitpoll.parroquia_id %}
+					    <option value='{{p.cod_parroquia}}'>{{p.parroquia}}</option>
+					{% endif %}
+				    {% endfor %}
+				</select>
+                            </div>
+                            <div class="form-group col-xs-6">
+                                <label class="subtitulo">Circuitos:&nbsp;</label>
+                                <select style="width:60%;" id="id_circuito" name="circuito">
+				    <option value="" selected="selected">Seleccione</option>
+				    {% for c in listar_circuito %}
+					{% if c.pk == editar_exitpoll.circuito_id %}
+					    <option value='{{c.id}}' selected='selected'>{{ c.n_circuito }}</option>
+					{% endif %}
+					{% if not c.pk == editar_exitpoll.circuito_id %}
+					    <option value='{{c.id}}'>{{ c.n_circuito }}</option>
+					{% endif %}
+				    {% endfor %}
+				</select>
+                            </div>                        
+                        </div>
+                        <br/>
+                        <br/>
+                        <br/>
+			
+			<div class="form-inline">
+                            <div class="form-group col-xs-6">
+                                <label class="titulo">Sectores:&nbsp;&nbsp;&nbsp;&nbsp;</label>
+                                 <select style="width:60%;" id="id_cod_sector" name="sector">
+				     {% for z in listar_sectores %}
+					{% if z.cod_parroquia == editar_exitpoll.parroquia_id %}
+					    <option value='{{z.cod_parroquia}}' selected='selected'>{{z.parroquia}}</option>
+					{% endif %}
+					{% if not z.cod_parroquia == editar_exitpoll.parroquia_id %}
+					    <option value='{{z.cod_parroquia}}'>{{z.parroquia}}</option>
+					{% endif %}
+				    {% endfor %}
+				</select>
+                            </div>
+                            <div class="form-group col-xs-6">
+                                <label class="subtitulo">Poligonal:&nbsp;</label>
+                                <select style="width:60%;" id="id_cod_pol" name="poligonal">
+				     {% for p in listar_parroquia %}
+					{% if p.cod_parroquia == editar_exitpoll.parroquia_id %}
+					    <option value='{{p.cod_parroquia}}' selected='selected'>{{p.parroquia}}</option>
+					{% endif %}
+					{% if not p.cod_parroquia == editar_exitpoll.parroquia_id %}
+					    <option value='{{p.cod_parroquia}}'>{{p.parroquia}}</option>
+					{% endif %}
+				    {% endfor %}
+				</select>
+                            </div>                        
+                        </div>
+			<br/>
+                        <br/>
+                        <br/>
+			<div class="form-inline">
+                            <div class="form-group col-xs-6">
+                                <label class="titulo">Centro:&nbsp;&nbsp;&nbsp;&nbsp;</label>
+                                 <select style="width:60%;" id="id_cod_n" name="centro">
+				     {% for p in listar_parroquia %}
+					{% if p.cod_parroquia == editar_exitpoll.parroquia_id %}
+					    <option value='{{p.cod_parroquia}}' selected='selected'>{{p.parroquia}}</option>
+					{% endif %}
+					{% if not p.cod_parroquia == editar_exitpoll.parroquia_id %}
+					    <option value='{{p.cod_parroquia}}'>{{p.parroquia}}</option>
+					{% endif %}
+				    {% endfor %}
+				</select>
+                            </div>
+                                                  
+                        </div>
+                        <br/>
+                        <br/>
+                        <br/>
+			<div class="form-inline">
+                            <div class="form-group col-xs-6">
+                                 <input id='user_create' type="hidden" name='user_create' value='{{ user.id }}'>
+				
+                            </div>                        
+                        </div>
+                        <br/>
+                
+			<div class="row">
+			    <input type="submit" style="font-weight: bold; font-size: 12px" class="btn btn-primary" id="guardar" value="Guardar"/>
+			    &nbsp; &nbsp; &nbsp;
+			    <input type="reset" id="limpiar" style="font-weight: bold" class="btn btn-success" value="Limpiar"/>
+			     &nbsp; &nbsp; &nbsp;
+			    <button role="button" id="volver" style="font-weight: bold; font-size: 12px" class="btn btn-warning " >Volver</button>
+			</div>
+			
+					       
+	    </form>
+	    <input type="hidden" name="val_nivel" id="val_nivel"/>
+	</div>
+    </div>
+    
+        
+</body>
+{% else %}
+<p style="color: #FF0000; font-size: 18px">Disculpe No esta autorizado para esa área.</p>
+{% endifusergroup %}
+</html> 
+{% endblock %}

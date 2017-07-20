@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+{% extends 'base.html' %}
+
+{% block contenido %}
+<html>
+<head>
+    <title>Registrar Partido</title>
+</head>
+<script type="text/javascript">
+$(document).ready(function(){
+	$("#id_foto").fileinput({
+        browseClass: "btn btn-primary btn-block",
+        showCaption: false,
+        showRemove: false,
+        showUpload: false,
+        browseLabel: "Imagen",
+        maxFileSize: 80,
+        allowedFileExtensions: ["jpg", "png"],
+        elErrorContainer: "#errorBlock",
+        msgSizeTooLarge:'Archivo muy pesado "{name}". (<b>{size} KB</b>) excede el tamaño máximo que es de <b>{maxSize} KB',
+        msgInvalidFileExtension: 'Extensiones invalidad "{name}". Solo admite archivos"{extensions}".',
+        initialPreview: [
+        "<img src='/foto/picture.png' style='width:250px;height:145px;' class='file-preview-image' alt='The Moon' title='The Moon'>",
+        ],
+    });
+	
+	
+    $('#n_partidos').alpha({allow:" "}); //Valida solo valores tipo texto
+    $('#siglas').alpha(); //Valida solo valores tipo texto
+    $('#correo').alphanumeric({allow:"@._"});
+    $('#twitter').alphanumeric({allow:"@._"});
+    $('#telefono').numeric(); //Solo permite numeros
+    $('#nom_presidente').alpha({allow:" "});
+    $('#ape_presidente').alpha({allow:" "});
+    
+    $('#registrar').click(function(e) {
+	e.preventDefault();
+	$('input').on({
+	    keypress: function() {
+		$(this).parent('div').removeClass('has-error');
+	    }
+	});
+			
+	if (($('#n_partidos').val() == '')) {
+	    bootbox.alert('Disculpe, Debe Colocar el nombre del Partido', function() {	    
+		$('#n_partidos').parent('div').addClass('has-error');
+	    });
+	}
+	else if (($('#siglas').val().length < 2)) {
+	    bootbox.alert('Disculpe, Debe Colocar las Siglas del Partido', function() {	    
+		$('#siglas').parent('div').addClass('has-error');
+	    });
+	}
+	else if (($('#telefono').val().length < 7)) {
+	    bootbox.alert('Disculpe, Debe indicar el Teléfono del Partido', function() {	    
+		$('#telefono').parent('div').addClass('has-error');
+	    });
+	}
+	else if (($('#correo').val().length < 10)) {
+	    bootbox.alert('Disculpe, Debe indicar el Correo del Partido', function() {	    
+		$('#correo').parent('div').addClass('has-error');
+	    });
+	}
+
+	else if (!$("#id_foto").val().match(/(?:gif|jpg|png|bmp|jpeg)$/)) { // inputted file path is not an image of one of the above types
+	    bootbox.alert('Disculpe, Debe seleccionar la Foto', function() {	    
+		$('#id_foto').parent('div').addClass('has-error');
+	    });
+	}
+	else if ($('#nom_presidente').val().length < 3) {
+	    bootbox.alert('Disculpe, Debe ingresar los Nombres de Presidente del Partido', function() {	    
+		$('#nom_presidente').parent('div').addClass('has-error');
+	    });
+	}
+	else if ($('#ape_presidente').val().length < 3) {
+	    bootbox.alert('Disculpe, Debe ingresar los Apellidos de Presidente del Partido', function() {	    
+		$('#nom_presidente').parent('div').addClass('has-error');
+	    });
+	}
+	else{
+	    
+	   $.post('',$('#form_part').serialize(),function(response){
+		if (response == 'existe') {
+		    bootbox.alert('Disculpe, Este Partido ya esta registrado', function() {	    
+			$('#n_partidos').parent('div').addClass('has-error');
+		    });
+		}else{
+		   $('#form_part').submit(); 
+		}
+	    });
+	}
+    });
+    $('#volver').click(function(){
+        url = '/partidos/'
+        window.location = url
+    })
+
+});
+</script>
+{% load templatag_grupos %}
+{% ifusergroup Registro %}
+<body>
+    <form method="post" id="form_part" enctype="multipart/form-data">
+	{% csrf_token %}
+	<br/>
+
+    
+	<div style="width: 80%;" class="panel panel-primary">
+	    <div class="panel-heading">
+	      <label class="panel-title">Registro de Partidos</label>
+	    </div>
+	    <br/>
+	    <fieldset><legend class="titulo">Datos Principales del Partido</legend></fieldset>
+	    <br/>
+	    <div class="form-inline">
+		<div class="form-group col-xs-1">
+		    <label>Nombre: </label>
+		</div>
+		<div class="form-group col-xs-5">
+		    <input type='text' maxlength="50" placeholder="Nombre Completo del Partido" style='width:100%;font-size: 13px' required=True id="n_partidos" name="n_partidos"/>
+		</div>
+		<div class="form-group col-xs-1">
+		    <label>Siglas: </label>
+		</div>
+		<div class="form-group col-xs-5">
+		    <input type='text' maxlength="10" placeholder="Siglas del Partido" style='width:100%;font-size: 13px' required id="siglas" name="siglas"/>
+		</div>
+	    </div>
+	    <br/>
+	    <br/>
+	    <br/>
+	    <div class="form-inline" >
+		<div class="form-group col-xs-1">
+		    <label>Teléfono: </label>
+		</div>
+		<div class="form-group col-xs-5">
+		    <input style='width:100%' id="telefono" placeholder="Ejemplo: 02432335566"  maxlength="11" name="telefono" type="text" required=True />
+		</div>
+		<div class="form-group col-xs-1">
+		    <label>Correo: </label>
+		</div>
+		<div class="form-group col-xs-5">
+		    <input id="correo" maxlength="40" placeholder="Ejemplo: partido@gmail.com" style='width:100%;font-size: 13px' name="correo" type="text" />
+		</div>
+	    </div>
+	   
+	    <br/>
+	    <br/>
+	    <br/>
+	    <div class="form-inline" style="text-align: left;font-weight: bold;font-size: 13px">
+		<div class="form-group col-xs-1">
+		    <label>Twiter: </label>
+		</div>
+		<div class="form-group col-xs-5">
+		    <input id="twitter" maxlength="30" style='width:100%;font-size: 13px' placeholder="Ejem: @partido" name="twitter" type="text"/>
+		</div>
+		<div class="form-group col-xs-1" style="text-align: left;font-weight: bold;font-size: 13px">
+		    <label>Logo: </label>
+		</div>
+		<div class="form-group col-xs-5">
+			<div class="help-block file-error-message" id="errorBlock" style="display: none;">Error de Archivo. Sólo son soportados archivos ".png, .jpg".</div>
+		    <label class="cargar">
+			
+			<input style='width:100%;font-size: 13px' type='file' id='id_foto' name='foto_partido' onchange="PreviewImage();">
+		    </label>
+		</div>
+	    </div>
+	    <input id='user_create' type="hidden" name='user_create' value='{{ user.id }}'>
+	    <br/>
+	    <br/>
+	    <br/>
+	    
+	    <fieldset><legend class="titulo">Datos Principales del Partido</legend></fieldset>
+	    <br/>
+	    <br/>
+	    <div class="form-inline" style="text-align: left;font-weight: bold;font-size: 13px">
+		<div class="form-group col-xs-1">
+		    <label>Nombres: </label>
+		</div>
+		<div class="form-group col-xs-5">
+		    <input type='text' style='width:100%;font-size: 13px' maxlength="30" placeholder="Nombre Completo del Presidente" id="nom_presidente" name="nom_presidente"/>
+		</div>
+		<div class="form-group col-xs-1">
+		    <label>Apellidos: </label>
+		</div>
+		<div class="form-group col-xs-5">
+		    <input type='text' style='width:100%;font-size: 13px' maxlength="30" placeholder="Apellido Completo del Presidente" id="ape_presidente" name="ape_presidente"/>
+		</div>
+	    </div>
+	    <br/>
+	    <br/>
+	    <br/>
+	    <br/>
+	    <div class="row" style="text-align: center">
+		<button type="button" id="volver" style="font-weight: bold;font-size: 13px" class="btn btn-warning " >
+		    &nbsp;<span class="glyphicon glyphicon-chevron-left"></span>&nbsp;Volver
+		</button>
+		<button type="submit" id="registrar" style="font-weight: bold;font-size: 13px" class="btn btn-info"/>
+		    &nbsp;<span class="glyphicon glyphicon-floppy-disk"></span>&nbsp;Registrar
+		</button>
+		<button type="reset" id="limpiar" style="font-weight: bold;font-size: 13px" class="btn btn-success"/>
+		    &nbsp;<span class="glyphicon glyphicon-retweet"></span>&nbsp;&nbsp;Limpiar
+		</button>
+	    </div>
+	    <br/>
+	</div>
+    </form>
+</body>
+{% else %}
+<p style="color: #FF0000; font-size: 18px">Disculpe No esta autorizado para esa área.</p>
+{% endifusergroup %}
+</html>
+{% endblock %}

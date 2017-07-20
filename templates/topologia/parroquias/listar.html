@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block contenido %}
+<script>
+$(document).ready(function(){
+    var TUbch = $('#tab_parroquia').dataTable({
+        "iDisplayLength": 25,
+        "iDisplayStart": 0,
+        "sPaginationType": "full_numbers",
+        "aLengthMenu": [25, 50, 75, 100],
+        "oLanguage": {"sUrl": "/static/js/es.txt"},
+        "aoColumns": [
+            {"sClass": "registro center", "sWidth": "10%"},
+            {"sClass": "registro center", "sWidth": "15%"},
+            {"sClass": "registro center", "sWidth": "5%"},
+            {"sClass": "registro center", "sWidth": "15%"},
+            {"sWidth": "3%", "bSortable": false, "sClass": "center sorting_false", "bSearchable": false},
+            {"sWidth": "3%", "bSortable": false, "sClass": "center sorting_false", "bSearchable": false},
+        ]
+    });
+    $('#enviar').click(function(){
+        url = '/configuraciones/topologia/parroquias/registrarparroquia/'
+        window.location = url
+    })   
+
+});
+</script>
+{% load templatag_grupos %}
+{% ifusergroup Topologia %}
+<div style="width:80%">
+    <button role="button" class="btn btn-primary" style="font-weight: bold;font-size: 13px" id="enviar" >
+        &nbsp;<span class="glyphicon glyphicon-plus"></span>&nbsp;Agregar Parroquia
+    </button>
+    </br>
+    </br>
+    
+    <table style="width:100%;" border="0" align="center" cellspacing="1" id="tab_parroquia" align="center"
+       class="table table-bordered table-striped table-hover table-condensed dt-responsive table-responsive" style="width:30%">
+    <thead style="font-size: 16px">
+        <tr class="info">
+            <th style='text-align: center' colspan="6">Listado de Parroquias</th>
+        </tr>
+        <tr class="info">
+            <th style='text-align: center'>Estado</th>
+            <th style='text-align: center'>Municipio</th>
+            <th style='text-align: center'>Código</th>
+            <th style='text-align: center'>Parroquia</th>
+            <th style='text-align: center'>Editar</th>
+            <th style='text-align: center'>Borrar</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for m in listar_parroquia %}
+        <tr style="font-size: 16px" class="{% cycle 'impar' 'par' %}">
+            <td>
+                {{m.estado}}
+            </td>
+            <td>   
+                {% for c in list_m %}
+                    {% if c.estado_id == m.estado_id and c.cod_municipio == m.municipio %}
+                        {{c.municipio}}
+                    {% endif %}
+                {% endfor %}
+            </td>
+            <td>
+                {{m.cod_parroquia}}
+            </td>
+            <td>
+                {{m.parroquia}}
+            </td>
+            <td style='text-align: center'>
+                <a href="{% url "editar_parroquia" m.id %}"><img style="width:25px;height: 25px" src="{{ STATIC_URL }}img/edit.png"/></a>
+            </td>
+            <td style='text-align: center'>
+                <a href="{% url "borrar_parroquia" m.id %}"><img style="width:25px;height: 25px" src="{{ STATIC_URL }}img/borrar.png"/></a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+{% else %}
+<p style="color: #FF0000; font-size: 18px">Disculpe No esta autorizado para esa área.</p>
+{% endifusergroup %}
+{% endblock %}

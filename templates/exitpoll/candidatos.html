@@ -1,0 +1,56 @@
+{% extends 'basemovil.html' %}
+
+{% block contenido %}
+<script type="text/javascript">
+    $(document).ready(function(){
+        $('#enviar').click(function(){
+             var id = $('#exit_poll').find('option').filter(':selected').val();
+             
+             url = '/votar/'+id+'/'
+             window.location = url
+        })
+        
+        $('#volver').click(function(){
+            url = '/menumovil/'
+             window.location = url
+        })  
+    })
+</script>
+<center>
+    <button style="font-weight: bold" role="button" id="volver" class="btn btn-primary">
+        <span class="glyphicon glyphicon-chevron-left"></span>&nbsp;Volver</button>
+    </br>
+    </br>
+    <div><h3>{{ listar_elecciones }}</h3></div>
+    </br>
+    </br>
+</center>
+<div class="row">
+
+    {% for n in todo %}
+         <div class="col-sm-2 col-md-2">
+            <div class="thumbnail">
+                <div class="caption">
+                    <div><img  style="width:190px;height: 50px" id="foto_par" class="img_pe" height="120" width="120" src="{{MEDIA_URL}}{{n.foto_partido}}"></div>
+                </div>
+                <a href="/votar/{{n.id}}/{{listar_id}}/{{id_grupo}}/{{id_sexo}}/{{id_estado}}/{{id_circuito}}/{{id_municipio}}">
+                    <img  style="width:100px;height: 100px" id="enviar" class="img_pe" height="120" width="120" src="{{MEDIA_URL}}{{n.foto}}">
+                </a>
+                <div class="caption">
+                    <div style= "text-align: center">{{n.nom_ape}} </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+    {% endfor %}
+    
+    
+
+   </div>
+
+{% endblock %}
+
+
+
+
+

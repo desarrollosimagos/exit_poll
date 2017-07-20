@@ -1,0 +1,272 @@
+{% extends 'base2.html' %}
+{% block contenido %}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <title>Resultados de Encuestas</title>
+</head>
+<script src="{{ STATIC_URL }}js/exporting.js"></script>
+<script src="{{ STATIC_URL }}js/drilldown.js"></script>
+
+<script type="text/javascript">
+    var chart;
+    $(document).ready(function(){   
+		$('select').on({
+			change: function() {
+			$(this).parent('div').removeClass('has-error');
+			}
+		});
+		$('input').on({
+			keypress: function() {
+			$(this).parent('div').removeClass('has-error');
+			}
+		});
+		
+		$("#encuestas").select2();
+		$('#reporte_pdf').click(function(e) {
+			//e.preventDefault();
+			var id = $('#encuestas').find('option').filter(':selected').val();
+			if (id == 0) { //si elección es igual a 0
+				bootbox.alert("Disculpe, Debe seleccionar la encuesta", function() {
+					$('#encuestas').parent('div').addClass('has-error'); // colocar class has-error de boostrap
+					$('#encuestas').select2('open')   
+				});
+			}
+			else{
+			    url = '/reportes/encuestas/reporte_encuesta/'+id
+			    window.open(url)
+			}
+		});
+		
+		
+		$('#grafico_encuesta').click(function(){
+            var id_encuesta = $('#encuestas').find('option').filter(':selected').val()
+            var titulo = ($('#exit_poll').find('option').filter(':selected').text())
+            $('#container').text('')
+            //var id = $(this).attr('id');
+            var bandera = 'candidato';
+            if (id_encuesta == 0) {
+                bootbox.alert('Disculpe, Debe Seleccionar la Encuesta', function() {	    
+					$('#encuestas').parent('div').addClass('has-error'); // colocar class has-error de boostrap
+					$('#encuestas').select2('open') 
+				});
+            }
+            else {
+                $.post('',{'id_encuesta':id_encuesta,'csrfmiddlewaretoken': "{{ csrf_token }}"}, function(data) {
+                    if (data == 'vacio') {
+						bootbox.alert('Disculpe, aún no hay registros para esta Encuesta', function() {	    
+								$('#container').html('')
+						});
+					}
+					else{
+						var preguntas = data.split(';;')
+						for(i=0 ;i < preguntas.length - 1;i++){
+
+							var respuestas = preguntas[i].split('###') //Picar las preguntas
+							//var res = respuestas[1].split('@@') //Picar Respuestas
+							var res_to = respuestas[1].split('$$$') //Picar Total por Pregunta
+							var res = res_to[0].split('@@') //Picar Respuestas
+							var tot_in = res_to[1].split('::')
+							
+							var sum_n = 0
+							for (p = 0; p  < tot_in.length ;p++ ) { // Sumatoria de total por pregunta
+								sum_n = sum_n+parseInt(tot_in[p]);
+							}
+							//console.log(sum_n)
+							var lista_json = []
+							var lista_json2 = []
+							var tr = ''
+							//var top = ''
+							
+							
+							var cab = ''
+							var tot = ''
+							var total = 0
+							var totales_res = []
+							
+							for (j = 0; j  < res.length ;j++ ) {
+								//var pos = res[j].indexOf('//')
+								
+								//console.log(res[j].substr(pos+2));
+								var res_t = res[j].split('//')
+								
+								if (parseInt(res_t[1]) > 0) {
+									cand = []
+									cand[0] = res_t[0] //Respuestas
+									cand[1] = parseInt(res_t[1]) //Cant por Respuestas
+									lista_json.push(cand)
+									
+									total = total+cand[1]
+									
+									cand2 =[]
+									cand2[0] = res_t[0]
+									cand2[1] = parseFloat(((res_t[1] * 100)/(sum_n)).toFixed(2));
+									
+									lista_json2.push(cand2)
+									
+									
+									cab = '<tr><td class="info" style="font-weight: bold;font-size: 14px;text-align: center" width="80%">'+'Respuesta'+'</td><td class="info" width="20%" style="font-weight: bold;font-size: 14px;text-align: center">'+'Cantidad'+'</tr>'
+									tr += '<tr><td style="font-size: 11px" width="80%">'+cand[0]+'</td><td width="20%" style="text-align: center">'+cand[1]+'</tr>'
+									//top = '<tr class="info"><td style="font-weight: bold;font-size: 18px;text-align: center; color=333333" colspan="2">'+respuestas[0]+'</td></tr>'
+								}
+							}
+							tot = '<tr class="active"><td style="font-size: 11px;font-weight: bold" width="70%">'+'Total'+'</td><td width="30%" style="font-weight: bold;text-align: center">'+total+'</tr>'
+							var total_pie = lista_json.length
+							if (total_pie > 0) {
+
+								var div_res = '<hr/><div style="width: 40%;display:inline !important" id="graficas_'+i+'">'+''+'</div><div style="width: 40%;display:inline !important" id="barra_'+i+'">'+''+'</div>';
+								$( div_res ).appendTo( "#container" );
+							    
+								var div_tab1 = '<div style="width: 80%" id="tabla_'+i+'"><table class="table table-bordered table-hover" width="80%" >'+cab+''+tr+''+tot+'</table></div>';
+								$( div_tab1 ).appendTo( "#container" );
+								
+								$('#graficas_'+i).highcharts({
+												
+									chart: {
+										plotBackgroundColor: null,
+										plotBorderWidth: null,
+										plotShadow: false,
+									},
+									title: {
+										text: respuestas[0],
+									},
+									tooltip: {
+										pointFormat: '{series.name}: <b>{point.percentage:.2f}%</b>'
+									},
+									plotOptions: {
+										pie: {
+											allowPointSelect: true,
+											cursor: 'pointer',
+											dataLabels: {
+												enabled: true,
+												format: '<b>Votos</b>: (<span style="color:#FF0000">{point.y}</span>)  {point.percentage:.2f} %',
+												style: {
+													color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
+												}
+											},
+											showInLegend: true
+										}
+									},
+									series: [{
+										type: 'pie',
+										name: 'Porcentaje de Votos',
+										data: lista_json,
+									}]
+								});
+								$('#barra_'+i).highcharts({
+									chart: {
+										type: 'column'
+									},
+									title: {
+										text: respuestas[0],
+									},
+									subtitle: {
+										//text: 
+									},
+									xAxis: {
+										type: 'category'
+									},
+									yAxis: {
+										title: {
+											text: ''
+											//texto lateral                                    
+										}
+									},
+									legend: {
+										enabled: false
+									},
+									plotOptions: {
+										series: {
+											borderWidth: 0,
+											dataLabels: {
+												enabled: true,
+												format: '<span style="color:#FF0000">{point.y}</span> %',
+											}
+										}
+									},
+									tooltip: {
+										headerFormat: '<span style="font-size:11px">{series.name}</span><br>',
+										pointFormat: '<span style="color:{point.color}">{point.name}</span>: <b>{point.y:.2f}%</b><br/>'
+									},
+									series: [{
+										name: 'Brands',
+										colorByPoint: true,
+										data: lista_json2,
+									}], 
+								});
+							}
+							id_x = '#highcharts-'+i*2
+								console.log(id_x)
+								$('.highcharts-container').css('display','inline')
+						}
+
+					}
+                });   
+            };
+        });
+    })
+</script>
+
+<body>
+	<center><h3>Generación de Gráficos y Reporte por Encuesta</h3></center>
+    <div style="width: 80%;" style="text-align: center; " class="panel panel-primary">
+        <div class="panel-heading">
+            Reporte de resultados en Formato PDF de Cada una de las Encuesta
+        </div>
+        <br/>
+		<br/>
+        <div class="form-inline" style="text-align: left;font-weight: bold">
+            <div class="form-group col-xs-2">
+            </div>
+            <div class="form-group col-xs-1">
+                <label>Encuestas: </label>
+            </div>
+            <div class="form-group col-xs-7">
+                <select class="form-control select2 input-sm " style="width:100%;" id="encuestas" name="encuestas">
+                    <option value="0">Seleccione</option>
+                    {% for n in listar %}
+                    <option value="{{n.id}}">{{ n.nombre }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group col-xs-2">
+		
+            </div>
+        </div>
+		<br/>
+        <br/>
+		<div class="form-inline" style="text-align: center;font-weight: bold">
+			<div class="form-group col-xs-2">
+			</div>
+			<div class="form-group col-xs-3">
+			<button role="button" id="reporte_pdf" style="font-weight: bold;width:100%;"  class="btn btn-info">
+				<span class="glyphicon glyphicon-file"></span>&nbsp;Generar Reporte - PDF</button>
+			</div>
+			<div class="form-group col-xs-2">
+			</div>
+			<div class="form-group col-xs-3">
+				<button role="button" id="grafico_encuesta" style="font-weight: bold;width: 100%"  class="btn btn-info">
+					<span class="glyphicon glyphicon-stats"></span>&nbsp;Génerar Gráficas
+				</button>
+			</div>
+			
+			
+        </div>
+        <br/>
+        <br/>
+        <br/>
+	</div>
+	<div>
+		<div id="container" style="display: inline">
+		
+		</div>
+	</div>
+</body>
+</html>
+
+{% endblock %}
+
+
+

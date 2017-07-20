@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+{% extends 'base.html' %}
+
+{% block contenido %}
+<html>
+<html>
+<head>
+    <title>Editar Estado</title>
+</head>
+<script type="text/javascript">
+$(document).ready(function(){
+    $('#estado').alpha({allow:" "}); //Valida solo valores tipo texto
+    $('#id_cod_estado').numeric(); //Valida solo valores tipo texto
+    $('#registrar').click(function(e){ //Valida al guardar que el tipo no sea menor a 5 caracteres
+	e.preventDefault();
+        if ($('#estado').val().length < 4) {
+            alert('Nombre de estado invalido (Muy Corto)');
+            return false;
+        }
+        //Valida que el campo no este vacio
+        else if($('#estado').val() == null ||  $('#estado').val().length == 0 || /^\s+$/.test($('#estado').val())) {
+            alert('Disculpe Estado esta vacio');
+            return false;
+        }
+        else {
+	    $('#id_cod_estado').prop('disabled',false);
+	    $('form').submit();
+	    $('#id_cod_estado').prop('disabled',true);
+        }
+    });
+    $('#volver').click(function(){
+        url = '/configuraciones/topologia/estados/'
+        window.location = url
+    })
+});
+</script>
+<body>
+    {% load templatag_grupos %}
+    {% ifusergroup Topologia %} 
+    <br/>
+    <br/>
+   
+    <form method="post">
+	{% csrf_token %}
+	<div style="width: 80%" class="panel panel-primary">
+            <div class="panel-heading">
+	      <label class="panel-title">Modificar Estado</label>
+            </div>
+	    <br/>
+	    <fieldset><legend class="titulo">Datos del Estado</legend></fieldset>
+            <br/>
+	    <div class="panel-body">
+                <div class="col-xs-2">Código</div>
+                <div class="col-xs-4">
+		    <input class="form-control" value="{{editar_estado.cod_estado}}" disabled="disabled" type='text' id="id_cod_estado" maxlength="2" name="cod_estado" />
+		</div>
+		<div class="col-xs-2">Estado</div>
+                <div class="col-xs-4">
+		    <input class="form-control" value="{{editar_estado.estado}}" type='text' maxlength="20" id="estado" name="estado"/>
+		</div>
+            </div>
+            <div class="panel-body">
+                
+            </div>
+            <div class="row" style="text-align: center">
+		<button type="button" id="volver" style="font-weight: bold;font-size: 13px" class="btn btn-warning " >
+		    &nbsp;<span class="glyphicon glyphicon-chevron-left"></span>&nbsp;Volver
+		</button>
+		<button type="submit" id="registrar" style="font-weight: bold;font-size: 13px" class="btn btn-info"/>
+		    &nbsp;<span class="glyphicon glyphicon-floppy-disk"></span>&nbsp;Guardar Cambios
+		</button>
+	    </div>
+            <br/>
+        </div>
+    </form>
+    {% else %}
+    <p style="color: #FF0000; font-size: 18px">Disculpe No esta autorizado para esa área.</p>
+    {% endifusergroup %}
+</body>
+</html>
+{% endblock %}
